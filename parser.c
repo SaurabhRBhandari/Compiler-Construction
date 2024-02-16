@@ -30,13 +30,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                 bool is_computed=true;
                 while(v!=NULL){
                     if(v->no_of_tokens>0){
-                        if(G.variables[current]->tokens[0]->is_terminal==1){
-                            continue;
-                        }
-                        else if(computed[G.variables[current]->tokens[0]->name]==true){
-                            continue;
-                        }
-                        else{
+                        if(v->tokens[0]->is_terminal==false && computed[v->tokens[0]->name]==false){
                             is_computed=false;
                             queue[rear] = G.variables[current]->tokens[0]->name;
                             rear++;
@@ -90,7 +84,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
 int main(){
     grammer G;
     G.no_of_variables = 1;
-    G.start_variable[0] = 0;
+    G.start_variable[0] = 1;
     G.variables[0] = (variable*)malloc(sizeof(variable));
     G.variables[0]->no_of_tokens = 1;
     G.variables[0]->rule_no = 0;
