@@ -27,7 +27,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                 int current=queue[front];
                 front++;
                 variable* v = G.variables[current];
-                bool terminal=true;
+                bool is_computed=true;
                 while(v!=NULL){
                     if(v->no_of_tokens>0){
                         if(G.variables[current]->tokens[0]->is_terminal==1){
@@ -37,19 +37,41 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                             continue;
                         }
                         else{
-                            terminal=false;
+                            is_computed=false;
                             queue[rear] = G.variables[current]->tokens[0]->name;
                             rear++;
                         }
                     }
                     v=v->next;
                 }
-                if(terminal==true){
+                if(is_computed==true){
                     variable* v = G.variables[current];
-                    while(v!=NULL){
+                    while(v!=NULL){                
                         if(v->no_of_tokens>0){
-                            F.elements[i].first[F.elements[i].no_of_first] = v->tokens[0]->name;
-                            F.elements[i].no_of_first++;
+                            int k=0;
+                            bool is_epsilon=true;
+                            while(k<v->no_of_tokens && is_epsilon==true){
+                                if(v->tokens[k]->is_terminal==1){
+                                    F.elements[current].first[F.elements[current].no_of_first] = v->tokens[k]->name;
+                                    F.elements[current].no_of_first++;
+                                    is_epsilon=false;
+                                }
+                                else{
+                                    for(int l=0;l<F.elements[v->tokens[k]->name].no_of_first;l++){
+                                        if(F.elements[v->tokens[k]->name].first[l]==0){
+                                            is_epsilon=true;
+                                            continue;
+                                        }
+                                        F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first[l];
+                                        F.elements[current].no_of_first++;
+                                    }
+                                }
+                                k++;
+                            }
+                            if(is_epsilon==true){
+                                F.elements[current].first[F.elements[current].no_of_first] = 0;
+                                F.elements[current].no_of_first++;
+                            }
                         }
                         v=v->next;
                     }

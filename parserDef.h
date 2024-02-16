@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #define MAX_TOKEN_LENGTH 100
 #define MAX_TOKENS 100
 
