@@ -2,8 +2,13 @@
 
 void add_state(state_id state, transition *transitions, int transition_count)
 {
-    // TODO: Implement the case when the state already exists
-    states[state].transitions = transitions;
+    int new_length = states[state].length + transition_count;
+    states[state].transitions = (transition *)realloc(states[state].transitions, new_length * sizeof(transition));
+    for (int i = 0; i < transition_count; i++)
+    {
+        states[state].transitions[states[state].length + i] = transitions[i];
+    }
+    states[state].length = new_length;
 }
 
 transition f(char ch, state_id next_state)
@@ -108,6 +113,36 @@ transition *twoToSeven(state_id next_state)
     return transitions;
 }
 
+transition *theta41(state_id next_state)
+{
+    // total - (a-z) - (A-Z) - (0-9)
+    int size = sizeof(alphabets) / sizeof(char) - 26 - 26 - 10;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < size; i++)
+    {
+
+        if ((alphabets[i] >= 'a' && alphabets[i] <= 'z') || (alphabets[i] >= 'A' && alphabets[i] <= 'Z') || (alphabets[i] >= '0' && alphabets[i] <= '9'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta47(state_id next_state)
+{
+    // total - (b-d) - (2-7)
+    int size = sizeof(alphabets) / sizeof(char) - 3 - 6;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if ((alphabets[i] >= 'b' && alphabets[i] <= 'd') || (alphabets[i] >= '2' && alphabets[i] <= '7'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
 void initialize_states()
 {
     for (int i = 0; i < MAX_STATES; i++)
@@ -116,22 +151,35 @@ void initialize_states()
         states[i].state_id = i;
     }
     int theta_size = sizeof(alphabets) / sizeof(char) - 1;
+    int total_size = theta_size + 1;
+
     add_state(START, (transition[]){f('%', S_0), f(' ', START), f('@', S_19), f('&', S_22), f('#', S_25), f('*', TK_MUL), f('>', S_29), f('<', S_32), f('/', TK_DIV), f('\t', START), f('\n', START), f('~', TK_NOT), f('[', TK_SQL), f(']', TK_SQR), f(',', TK_COMMA), f(';', TK_SEM), f(':', TK_COLON), f('.', TK_DOT), f('(', TK_OP), f(')', TK_CL), f('=', TK_EQ), f('+', TK_PLUS), f('-', TK_MINUS), f('!', S_17)}, 24);
     add_state(START, bToD(S_46), 3);
     add_state(START, zeroToNine(S_50), 10);
     add_state(START, aToZExceptBToD(S_44), 23);
-    add_state(S_0, theta('%', S_0), theta_size);
-    add_state(S_0, (transition[]){f('%', S_1)}, 1);
+    add_state(S_0, theta('\n', S_0), theta_size);
+    add_state(S_0, (transition[]){f('\n', S_1)}, 1);
 
-    // TODO: Odd starting states
+    add_state(S_13, (transition[]){f('=', TK_EQ)}, 1);
+    add_state(S_17, (transition[]){f('=', TK_NE)}, 1);
     add_state(S_19, (transition[]){f('@', S_20)}, 1);
     add_state(S_23, (transition[]){f('&', TK_AND)}, 1);
     add_state(S_25, aToZ(S_26), 26);
     add_state(S_29, theta('=', TK_GT), theta_size);
     add_state(S_29, (transition[]){f('=', TK_GE)}, 1);
-    add_state(S_35, theta('-', S_36), theta_size);
+    add_state(S_35, theta('-', TK_LT), theta_size);
     add_state(S_35, (transition[]){f('-', S_37)}, 1);
     add_state(S_37, (transition[]){f('-', TK_ASSIGNOP)}, 1);
+    add_state(S_41, AToZ(S_41), 26);
+    add_state(S_41, aToZ(S_41), 26);
+    add_state(S_41, zeroToNine(S_42), 10);
+    add_state(S_41, theta41(S_41), total_size - 26 - 26 - 10);
+    add_state(S_47, twoToSeven(S_48), 6);
+    add_state(S_47, bToD(S_47), 3);
+    add_state(S_47, theta47(S_49), total_size - 6 - 3);
+    add_state(S_53, zeroToNine(S_54), 10);
+    add_state(S_57, zeroToNine(TK_RNUM), 10);
+    add_state(S_59, zeroToNine(S_57), 10);
 
     // TODO: Even starting states
     add_state(S_20, (transition[]){f('@', TK_OR)}, 1);
