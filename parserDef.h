@@ -1,6 +1,5 @@
 #include <stdbool.h>
 
-#define MAX_TOKEN_LENGTH 100
 #define MAX_TOKENS 100
 
 typedef struct token{
@@ -26,7 +25,9 @@ typedef struct first_follow_element{
     int no_of_first;
     int no_of_follow;
     int first[MAX_TOKENS];
+    int first_rule[MAX_TOKENS];
     int follow[MAX_TOKENS];
+    int follow_rule[MAX_TOKENS];
 }first_follow_element;
 
 typedef struct FirstAndFollow{
@@ -36,10 +37,10 @@ typedef struct FirstAndFollow{
 }FirstAndFollow;
 
 
-typedef struct parse_table{
+typedef struct table{
     int no_of_rows;
     int no_of_columns;
     int row[MAX_TOKENS];
     int column[MAX_TOKENS];
     int table[MAX_TOKENS][MAX_TOKENS];
-}parse_table;
+}table;

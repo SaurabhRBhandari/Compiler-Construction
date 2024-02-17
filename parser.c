@@ -74,6 +74,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                                     }
                                     if(is_present==false){
                                         F.elements[current].first[F.elements[current].no_of_first] = v->tokens[k]->name;
+                                        F.elements[current].first_rule[F.elements[current].no_of_first] = v->rule_no;
                                         F.elements[current].no_of_first++;
                                     }
                                     is_epsilon=false;
@@ -94,6 +95,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                                         }
                                         if(is_present==false){
                                             F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first[l];
+                                            F.elements[current].first_rule[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first_rule[l];
                                             F.elements[current].no_of_first++;
                                         }
                                     }
@@ -110,6 +112,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                                 }
                                 if(is_present==false){
                                     F.elements[current].first[F.elements[current].no_of_first] = -1;
+                                    F.elements[current].first_rule[F.elements[current].no_of_first] = v->rule_no;
                                     F.elements[current].no_of_first++;
                                 }
                             }
@@ -127,6 +130,57 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
     }
     return F;
 }
+
+bool createParseTable(FirstAndFollow F,table* T){
+    int m=0;
+    for(int i=0;i<F.no_of_tokens;i++){
+        for(int j=0;j<F.elements[i].no_of_first;j++){
+            if(F.elements[i].first[j]>m){
+                m=F.elements[i].first[j];
+            }
+        }
+        for(int j=0;j<F.elements[i].no_of_follow;j++){
+            if(F.elements[i].follow[j]>m){
+                m=F.elements[i].follow[j];
+            }
+        }
+    }
+    T->no_of_rows = F.no_of_tokens;
+    T->no_of_columns = m+1;
+    for(int i=0;i<F.no_of_tokens;i++){
+        for(int j=0;j<T->no_of_columns;j++){
+            T->table[i][j]=-1;
+        }
+    }
+    bool is_LL1=true;
+    for(int i=0;i<F.no_of_tokens;i++){
+        for(int j=0;j<F.elements[i].no_of_first;j++){
+            if(F.elements[i].first[j]!=-1){
+                if(T->table[i][F.elements[i].first[j]]==-1){
+                    T->table[i][F.elements[i].first[j]]=F.elements[i].first_rule[j];
+                }
+                else{
+                    is_LL1=false;
+                    break;
+                }
+            }
+            else{
+                for(int k=0;k<F.elements[i].no_of_follow;k++){
+                    if(T->table[i][F.elements[i].follow[k]]==-1){
+                        T->table[i][F.elements[i].follow[k]]=F.elements[i].first_rule[j];
+                    }
+                    else{
+                        is_LL1=false;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return is_LL1;
+}
+
+
 
 int main(){
     grammer G;
