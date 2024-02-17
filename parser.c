@@ -45,7 +45,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                                 else{
                                     is_epsilon=false;
                                     for(int l=0;l<F.elements[v->tokens[k]->name].no_of_first;l++){
-                                        if(F.elements[v->tokens[k]->name].first[l]==0){
+                                        if(F.elements[v->tokens[k]->name].first[l]==-1){
                                             is_epsilon=true;
                                             break;
                                         }
@@ -65,31 +65,58 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                             bool is_epsilon=true;
                             while(k<v->no_of_tokens && is_epsilon==true){
                                 if(v->tokens[k]->is_terminal==1){
-                                    F.elements[current].first[F.elements[current].no_of_first] = v->tokens[k]->name;
-                                    F.elements[current].no_of_first++;
+                                    bool is_present=false;
+                                    for(int l=0;l<F.elements[current].no_of_first;l++){
+                                        if(F.elements[current].first[l]==v->tokens[k]->name){
+                                            is_present=true;
+                                            break;
+                                        }
+                                    }
+                                    if(is_present==false){
+                                        F.elements[current].first[F.elements[current].no_of_first] = v->tokens[k]->name;
+                                        F.elements[current].no_of_first++;
+                                    }
                                     is_epsilon=false;
                                 }
                                 else{
                                     is_epsilon=false;
                                     for(int l=0;l<F.elements[v->tokens[k]->name].no_of_first;l++){
-                                        if(F.elements[v->tokens[k]->name].first[l]==0){
+                                        if(F.elements[v->tokens[k]->name].first[l]==-1){
                                             is_epsilon=true;
                                             continue;
                                         }
-                                        F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first[l];
-                                        F.elements[current].no_of_first++;
+                                        bool is_present=false;
+                                        for(int r=0;r<F.elements[current].no_of_first;r++){
+                                            if(F.elements[current].first[r]==F.elements[v->tokens[k]->name].first[l]){
+                                                is_present=true;
+                                                break;
+                                            }
+                                        }
+                                        if(is_present==false){
+                                            F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first[l];
+                                            F.elements[current].no_of_first++;
+                                        }
                                     }
                                 }
                                 k++;
                             }
                             if(is_epsilon==true){
-                                F.elements[current].first[F.elements[current].no_of_first] = 0;
-                                F.elements[current].no_of_first++;
+                                bool is_present=false;
+                                for(int l=0;l<F.elements[current].no_of_first;l++){
+                                    if(F.elements[current].first[l]==-1){
+                                        is_present=true;
+                                        break;
+                                    }
+                                }
+                                if(is_present==false){
+                                    F.elements[current].first[F.elements[current].no_of_first] = -1;
+                                    F.elements[current].no_of_first++;
+                                }
                             }
                         }
                         v=v->next;
                     }
-                    computed[i]=true;
+                    computed[current]=true;
                 }
             }
 
@@ -103,15 +130,43 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
 
 int main(){
     grammer G;
-    G.no_of_variables = 1;
-    G.start_variable[0] = 1;
+    G.no_of_variables = 3;
+    G.start_variable[0] = 0;
+    G.start_variable[1] = 1;
+    G.start_variable[2] = 2;
     G.variables[0] = (variable*)malloc(sizeof(variable));
-    G.variables[0]->no_of_tokens = 1;
-    G.variables[0]->rule_no = 0;
+    G.variables[0]->no_of_tokens = 2;
+    G.variables[0]->rule_no = 1;
     G.variables[0]->tokens[0] = (token*)malloc(sizeof(token));
-    G.variables[0]->tokens[0]->name = 0;
-    G.variables[0]->tokens[0]->is_terminal = 1;
+    G.variables[0]->tokens[0]->name = 1;
+    G.variables[0]->tokens[0]->is_terminal = 0;
+    G.variables[0]->tokens[1] = (token*)malloc(sizeof(token));
+    G.variables[0]->tokens[1]->name = 5;
+    G.variables[0]->tokens[1]->is_terminal = 1;
     G.variables[0]->next = NULL;
+    G.variables[1] = (variable*)malloc(sizeof(variable));
+    G.variables[1]->no_of_tokens = 1;
+    G.variables[1]->rule_no = 3;
+    G.variables[1]->tokens[0] = (token*)malloc(sizeof(token));
+    G.variables[1]->tokens[0]->name = -1;
+    G.variables[1]->tokens[0]->is_terminal = 1;
+    G.variables[1]->next = (variable*)malloc(sizeof(variable));
+    G.variables[1]->next->no_of_tokens = 1;
+    G.variables[1]->next->rule_no = 4;
+    G.variables[1]->next->tokens[0] = (token*)malloc(sizeof(token));
+    G.variables[1]->next->tokens[0]->name = 3;
+    G.variables[1]->next->tokens[0]->is_terminal = 1;
+    G.variables[1]->next->next = NULL;
+    G.variables[2] = (variable*)malloc(sizeof(variable));
+    G.variables[2]->no_of_tokens = 2;
+    G.variables[2]->rule_no = 5;
+    G.variables[2]->tokens[0] = (token*)malloc(sizeof(token));
+    G.variables[2]->tokens[0]->name = 1;
+    G.variables[2]->tokens[0]->is_terminal = 0;
+    G.variables[2]->tokens[1] = (token*)malloc(sizeof(token));
+    G.variables[2]->tokens[1]->name = 1;
+    G.variables[2]->tokens[1]->is_terminal = 0;
+    G.variables[2]->next = NULL;
     FirstAndFollow F = ComputeFirstAndFollowSets(G);
     //Print First and Follow Sets
     for(int i=0;i<F.no_of_tokens;i++){
