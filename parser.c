@@ -30,10 +30,29 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                 bool is_computed=true;
                 while(v!=NULL){
                     if(v->no_of_tokens>0){
-                        if(v->tokens[0]->is_terminal==false && computed[v->tokens[0]->name]==false){
-                            is_computed=false;
-                            queue[rear] = G.variables[current]->tokens[0]->name;
-                            rear++;
+                        int k=0;
+                        bool is_epsilon=true;
+                        while(k<v->no_of_tokens && is_epsilon==true){
+                            if(v->tokens[k]->is_terminal==1){
+                                break;
+                            }
+                            else{
+                                if(computed[v->tokens[k]->name]==false){
+                                    queue[rear] = v->tokens[k]->name;
+                                    rear++;
+                                    is_computed=false;
+                                }
+                                else{
+                                    is_epsilon=false;
+                                    for(int l=0;l<F.elements[v->tokens[k]->name].no_of_first;l++){
+                                        if(F.elements[v->tokens[k]->name].first[l]==0){
+                                            is_epsilon=true;
+                                            break;
+                                        }
+                                    }                  
+                                }
+                            }
+                            k++;
                         }
                     }
                     v=v->next;
@@ -51,6 +70,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G){
                                     is_epsilon=false;
                                 }
                                 else{
+                                    is_epsilon=false;
                                     for(int l=0;l<F.elements[v->tokens[k]->name].no_of_first;l++){
                                         if(F.elements[v->tokens[k]->name].first[l]==0){
                                             is_epsilon=true;
