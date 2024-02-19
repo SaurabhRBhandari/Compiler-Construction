@@ -2,6 +2,8 @@
   "files.associations": {
     "stdlib.h": "c",
     "lexerdef.h": "c",
-    "stdio.h": "c"
+    "stdio.h": "c",
+    "string.h": "c",
+    "salad.h": "c"
   }
 }

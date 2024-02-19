@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#define MAX_BUFFER_SIZE 50
+#include <stdbool.h>
+#define MAX_BUFFER_SIZE 1000
 #define MAX_STATES 150
 
 const char alphabets[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
@@ -13,6 +13,7 @@ const char alphabets[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
                           '3', '4', '5', '6', '7', '8', '9', ' ', '\n', '\t', '~',
                           '(', '[', ']', ')', '<', '>', '!', '@', '#', '%', '&',
                           '*', '_', '+', '-', '/', '=', ';', ':', '.', ','};
+
 int line_count = 0;
 
 typedef struct Transition
@@ -26,6 +27,8 @@ typedef struct State
     int state_id;
     struct Transition **transitions;
     int length;
+    bool is_final_state;
+    int retract_count;
 } State;
 
 typedef struct TwinBuffer
@@ -57,7 +60,8 @@ typedef enum state_id
     TK_COMMENT,
     TK_FIELDID,
     TK_ID,
-    TK_NUM,
+    TK_NUM_1,
+    TK_NUM_2,
     TK_RNUM,
     TK_FUNID,
     TK_RUID,
@@ -104,7 +108,8 @@ typedef enum state_id
     TK_AND,
     TK_OR,
     TK_NOT,
-    TK_LT,
+    TK_LT_1,
+    TK_LT_2,
     TK_LE,
     TK_EQ,
     TK_GT,
@@ -185,3 +190,44 @@ tokenInfo getNextToken(twinBuffer buffer);
 state get_next_state(state current_state, char next_char);
 
 transition *theta(char except_char, state_id next_state);
+
+#define ALPHABET 27
+typedef struct Trie
+{
+    struct Trie *characters[ALPHABET];
+    state_id token;
+} Trie;
+
+typedef struct Trie *trie;
+
+trie getTrieNode(void);
+void insert(trie root, const char *key, state_id token);
+state_id search(trie root, const char *key);
+#undef ALPHABET
+trie look_up_table;
+
+#define yellow(x...)          \
+    {                         \
+        printf("\033[1;33m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define red(x...)             \
+    {                         \
+        printf("\033[1;31m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define green(x...)           \
+    {                         \
+        printf("\033[1;32m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define blue(x...)            \
+    {                         \
+        printf("\033[1;34m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+// #define blue(x...)
