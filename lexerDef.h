@@ -2,119 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#define MAX_BUFFER_SIZE 1000
-#define MAX_STATES 150
 
-const char alphabets[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-                          'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                          'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                          'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                          'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2',
-                          '3', '4', '5', '6', '7', '8', '9', ' ', '\n', '\t', '~',
-                          '(', '[', ']', ')', '<', '>', '!', '@', '#', '%', '&',
-                          '*', '_', '+', '-', '/', '=', ';', ':', '.', ','};
+#define MAX_BUFFER_SIZE 30
+#define MAX_STATES 63
 
-int line_count = 0;
-
-typedef struct Transition
-{
-    char next_char;
-    struct State *next_state;
-} Transition;
-
-typedef struct State
-{
-    int state_id;
-    struct Transition **transitions;
-    int length;
-    bool is_final_state;
-    int retract_count;
-} State;
-
-typedef struct TwinBuffer
-{
-    char primary_buffer[MAX_BUFFER_SIZE];
-    char secondary_buffer[MAX_BUFFER_SIZE];
-    int primary_buffer_index;
-    int secondary_buffer_index;
-} TwinBuffer;
-
-typedef struct TokenInfo
-{
-    int *tokens;
-    int token_count;
-} TokenInfo;
-
-typedef struct State *state;
-typedef struct Transition *transition;
-typedef struct TwinBuffer *twinBuffer;
-typedef struct TokenInfo *tokenInfo;
-
-State states[MAX_STATES];
-
+const char ALPHABETS[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\n', '\t', '~', '(', '[', ']', ')', '<', '>', '!', '@', '#', '%', '&', '*', '_', '+', '-', '/', '=', ';', ':', '.', ','};
+const int ALPHABET_SIZE = sizeof(ALPHABETS) / sizeof(ALPHABETS[0]);
+const char *const TOKENS[] = {"TK_NOTOKEN", "TK_INVALID", "TK_ASSIGNOP", "TK_COMMENT", "TK_FIELDID", "TK_ID", "TK_NUM", "TK_RNUM", "TK_FUNID", "TK_RUID", "TK_WITH", "TK_PARAMETERS", "TK_END", "TK_WHILE", "TK_UNION", "TK_ENDUNION", "TK_DEFINETYPE", "TK_AS", "TK_TYPE", "TK_MAIN", "TK_GLOBAL", "TK_PARAMETER", "TK_LIST", "TK_SQL", "TK_SQR", "TK_INPUT", "TK_OUTPUT", "TK_INT", "TK_REAL", "TK_COMMA", "TK_SEM", "TK_COLON", "TK_DOT", "TK_ENDWHILE", "TK_OP", "TK_CL", "TK_IF", "TK_THEN", "TK_ENDIF", "TK_READ", "TK_WRITE", "TK_RETURN", "TK_PLUS", "TK_MINUS", "TK_MUL", "TK_DIV", "TK_CALL", "TK_RECORD", "TK_ENDRECORD", "TK_ELSE", "TK_AND", "TK_OR", "TK_NOT", "TK_LT", "TK_LE", "TK_EQ", "TK_GT", "TK_GE", "TK_NE", 0};
 typedef enum state_id
 {
-    START,
-    TK_INVALID,
-    TK_ASSIGNOP,
-    TK_COMMENT,
-    TK_FIELDID,
-    TK_ID,
-    TK_NUM_1,
-    TK_NUM_2,
-    TK_RNUM,
-    TK_FUNID,
-    TK_RUID,
-    TK_WITH,
-    TK_PARAMETERS,
-    TK_END,
-    TK_WHILE,
-    TK_UNION,
-    TK_ENDUNION,
-    TK_DEFINETYPE,
-    TK_AS,
-    TK_TYPE,
-    TK_MAIN,
-    TK_GLOBAL,
-    TK_PARAMETER,
-    TK_LIST,
-    TK_SQL,
-    TK_SQR,
-    TK_INPUT,
-    TK_OUTPUT,
-    TK_INT,
-    TK_REAL,
-    TK_COMMA,
-    TK_SEM,
-    TK_COLON,
-    TK_DOT,
-    TK_ENDWHILE,
-    TK_OP,
-    TK_CL,
-    TK_IF,
-    TK_THEN,
-    TK_ENDIF,
-    TK_READ,
-    TK_WRITE,
-    TK_RETURN,
-    TK_PLUS,
-    TK_MINUS,
-    TK_MUL,
-    TK_DIV,
-    TK_CALL,
-    TK_RECORD,
-    TK_ENDRECORD,
-    TK_ELSE,
-    TK_AND,
-    TK_OR,
-    TK_NOT,
-    TK_LT_1,
-    TK_LT_2,
-    TK_LE,
-    TK_EQ,
-    TK_GT,
-    TK_GE,
-    TK_NE,
     S_0,
     S_1,
     S_2,
@@ -176,34 +72,136 @@ typedef enum state_id
     S_58,
     S_59,
     S_60,
-    S_61
+    S_61,
+    START,
 } state_id;
+
+typedef enum token_id
+{
+    TK_NOTOKEN,
+    TK_INVALID,
+    TK_ASSIGNOP,
+    TK_COMMENT,
+    TK_FIELDID,
+    TK_ID,
+    TK_NUM,
+    TK_RNUM,
+    TK_FUNID,
+    TK_RUID,
+    TK_WITH,
+    TK_PARAMETERS,
+    TK_END,
+    TK_WHILE,
+    TK_UNION,
+    TK_ENDUNION,
+    TK_DEFINETYPE,
+    TK_AS,
+    TK_TYPE,
+    TK_MAIN,
+    TK_GLOBAL,
+    TK_PARAMETER,
+    TK_LIST,
+    TK_SQL,
+    TK_SQR,
+    TK_INPUT,
+    TK_OUTPUT,
+    TK_INT,
+    TK_REAL,
+    TK_COMMA,
+    TK_SEM,
+    TK_COLON,
+    TK_DOT,
+    TK_ENDWHILE,
+    TK_OP,
+    TK_CL,
+    TK_IF,
+    TK_THEN,
+    TK_ENDIF,
+    TK_READ,
+    TK_WRITE,
+    TK_RETURN,
+    TK_PLUS,
+    TK_MINUS,
+    TK_MUL,
+    TK_DIV,
+    TK_CALL,
+    TK_RECORD,
+    TK_ENDRECORD,
+    TK_ELSE,
+    TK_AND,
+    TK_OR,
+    TK_NOT,
+    TK_LT,
+    TK_LE,
+    TK_EQ,
+    TK_GT,
+    TK_GE,
+    TK_NE,
+} token_id;
+
+typedef struct TwinBuffer
+{
+    char primary_buffer[MAX_BUFFER_SIZE];
+    char secondary_buffer[MAX_BUFFER_SIZE];
+    int primary_buffer_index;
+    int secondary_buffer_index;
+    int line_count;
+} TwinBuffer;
+
+typedef struct TokenInfo
+{
+    int *tokens;
+    int token_count;
+} TokenInfo;
+
+typedef struct State
+{
+    // int state_id;
+    struct Transition **transitions;
+    int length;
+    token_id token;
+    int retract_count;
+    int state_id;
+} State;
+typedef struct Transition
+{
+    char next_char;
+    struct State *next_state;
+} Transition;
+
+typedef struct State *state;
+typedef struct Transition *transition;
+typedef struct TwinBuffer *twinBuffer;
+typedef struct TokenInfo *tokenInfo;
+
+State states[MAX_STATES];
 
 void add_state(state_id state_num, transition *transitions, int transition_count);
 
 void initialize_states();
+void initialize_transitions();
+void initialize_lookup_table();
+void theta(state_id curr_state, state_id next_state);
 
 FILE *getStream(FILE *fp);
-
 tokenInfo getNextToken(twinBuffer buffer);
-
 state get_next_state(state current_state, char next_char);
 
-transition *theta(char except_char, state_id next_state);
-
+// TODO: Move to a separate file
 #define ALPHABET 27
 typedef struct Trie
 {
     struct Trie *characters[ALPHABET];
-    state_id token;
+    token_id token;
 } Trie;
 
 typedef struct Trie *trie;
 
 trie getTrieNode(void);
-void insert(trie root, const char *key, state_id token);
-state_id search(trie root, const char *key);
+void insert(trie root, const char *key, token_id token);
+token_id search(trie root, const char *key);
 #undef ALPHABET
+
 trie look_up_table;
 
 #define yellow(x...)          \

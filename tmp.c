@@ -3,7 +3,6 @@
 #define LEXERDEF_H
 #endif
 
-// TODO: move trie to other file
 #define ALPHABET 27
 trie getTrieNode(void)
 {
@@ -14,7 +13,7 @@ trie getTrieNode(void)
     return newNode;
 }
 
-void insert(trie root, const char *key, token_id token)
+void insert(trie root, const char *key, state_id token)
 {
     int i, size = strlen(key), index;
     trie curr = root;
@@ -31,7 +30,7 @@ void insert(trie root, const char *key, token_id token)
     curr->token = token;
 }
 
-token_id search(trie root, const char *key)
+state_id search(trie root, const char *key)
 {
     int i, size = strlen(key), index;
     trie curr = root;
@@ -42,14 +41,14 @@ token_id search(trie root, const char *key)
         else
             index = (int)key[i] - (int)'a';
         if (!curr->characters[index])
-            return TK_INVALID;
+            return TK_INVALID; // Rotten Vegetable
         curr = curr->characters[index];
     }
-    return curr->token;
+    return curr->token; // type of vegetable
 }
 #undef ALPHABET
 
-void add_transition(state_id state, transition *transitions, int transition_count)
+void add_state(state_id state, transition *transitions, int transition_count)
 {
     int new_length = states[state].length + transition_count;
     states[state].transitions = (transition *)realloc(states[state].transitions, new_length * sizeof(transition));
@@ -66,6 +65,21 @@ transition f(char ch, state_id next_state)
     t->next_state = &states[next_state];
     t->next_char = ch;
     return t;
+}
+
+transition *theta(char except_char, state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 1;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+        if (alphabets[i] != except_char)
+        {
+            transitions[j++] = f(alphabets[i], next_state);
+        }
+    }
+    return transitions;
 }
 
 transition *aToZExceptBToD(state_id next_state)
@@ -147,101 +161,210 @@ transition *twoToSeven(state_id next_state)
     return transitions;
 }
 
-void theta(state_id curr_state, state_id next_state)
+transition *theta32(state_id next_state)
 {
-    // TODO: Write O(n) code instead
-    int size = ALPHABET_SIZE - states[curr_state].length;
+    int size = sizeof(alphabets) / sizeof(char) - 3 - 6;
     transition *transitions = (transition *)malloc(size * sizeof(transition));
     int j = 0;
-    for (int i = 0; i < ALPHABET_SIZE; i++)
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
     {
-        bool flag = false;
-        for (int j = 0; j < states[curr_state].length; j++)
-        {
-            if (states[curr_state].transitions[j]->next_char == ALPHABETS[i])
-            {
-                flag = true;
-                break;
-            }
-        }
-        if (!flag)
-        {
-            transitions[j++] = f(ALPHABETS[i], next_state);
-        }
+        if (alphabets[i] == '-' || alphabets[i] == '=')
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
     }
-    add_transition(curr_state, transitions, size);
+    return transitions;
 }
+
+transition *theta41(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 2;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+
+        if ((alphabets[i] >= 'a' && alphabets[i] <= 'z') || (alphabets[i] >= 'A' && alphabets[i] <= 'Z') || (alphabets[i] >= '0' && alphabets[i] <= '9'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta42(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 10;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+
+        if ((alphabets[i] >= '0' && alphabets[i] <= '9'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta44(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 26;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+
+        if ((alphabets[i] >= 'a' && alphabets[i] <= 'z'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta47(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 3 - 6;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+        if ((alphabets[i] >= 'b' && alphabets[i] <= 'd') || (alphabets[i] >= '2' && alphabets[i] <= '7'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta48(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 6;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+        if (alphabets[i] >= '2' && alphabets[i] <= '7')
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta50(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 11;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+        if (alphabets[i] == '.' || (alphabets[i] >= '0' && alphabets[i] <= '9'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
+transition *theta52(state_id next_state)
+{
+    int size = sizeof(alphabets) / sizeof(char) - 10;
+    transition *transitions = (transition *)malloc(size * sizeof(transition));
+    int j = 0;
+    for (int i = 0; i < sizeof(alphabets) / sizeof(char); i++)
+    {
+        if ((alphabets[i] >= '0' && alphabets[i] <= '9'))
+            continue;
+        transitions[j++] = f(alphabets[i], next_state);
+    }
+    return transitions;
+}
+
 void initialize_states()
 {
     for (int i = 0; i < MAX_STATES; i++)
     {
         states[i].length = 0;
         states[i].state_id = i;
+        if (i > START && i <= S_18)
+        {
+            states[i].is_final_state = true;
+        }
+        else
+        {
+            states[i].is_final_state = false;
+        }
+        if (i == S_45 || i == S_43 || i == S_60 || i == S_3 || i == S_2 || i == S_1)
+        {
+            states[i].is_final_state = true;
+        }
         states[i].retract_count = 0;
-        states[i].token = TK_NOTOKEN;
-        states[i].transitions = NULL;
     }
-    // TODO: Map tokens to corresponding states and retract counts
-}
+    states[S_27].retract_count = 1;
+    states[S_43].retract_count = 1;
+    states[S_45].retract_count = 1;
+    states[S_55].retract_count = 1;
+    states[S_51].retract_count = 1;
+    states[S_61].retract_count = 1;
+    states[S_33].retract_count = 2;
+    states[S_36].retract_count = 2;
+    states[S_30].retract_count = 1;
+    states[S_49].retract_count = 1;
 
-void initialize_transitions()
-{
-    // TODO: verify DFA
-    add_transition(START, (transition[]){f('%', S_0), f(' ', S_2), f('@', S_19), f('&', S_22), f('#', S_25), f('*', S_28), f('>', S_29), f('<', S_32), f('/', S_39), f('\t', S_60), f('\n', S_3), f('~', S_4), f('[', S_5), f(']', S_6), f(',', S_7), f(';', S_8), f(':', S_9), f('.', S_10), f('(', S_11), f(')', S_12), f('=', S_14), f('+', S_15), f('-', S_16), f('!', S_17), f('_', S_40)}, 25);
-    add_transition(START, bToD(S_46), 3);
-    add_transition(START, zeroToNine(S_50), 10);
-    add_transition(START, aToZExceptBToD(S_44), 23);
-    add_transition(S_0, (transition[]){f('\n', S_1)}, 1);
-    theta(S_0, S_0);
-    add_transition(S_13, (transition[]){f('=', S_14)}, 1);
-    add_transition(S_17, (transition[]){f('=', S_18)}, 1);
-    add_transition(S_19, (transition[]){f('@', S_20)}, 1);
-    add_transition(S_20, (transition[]){f('@', S_21)}, 1);
-    add_transition(S_22, (transition[]){f('&', S_23)}, 1);
-    add_transition(S_23, (transition[]){f('&', S_24)}, 1);
-    add_transition(S_25, aToZ(S_26), 26);
-    add_transition(S_26, aToZ(S_26), 26);
-    theta(S_26, S_27);
-    add_transition(S_29, (transition[]){f('=', S_31)}, 1);
-    theta(S_29, S_30);
-    add_transition(S_32, (transition[]){f('=', S_34), f('-', S_35)}, 2);
-    theta(S_32, S_33);
-    add_transition(S_35, (transition[]){f('-', S_37)}, 1);
-    theta(S_35, S_36);
-    add_transition(S_37, (transition[]){f('-', S_38)}, 1);
-    add_transition(S_40, AToZ(S_41), 52);
-    add_transition(S_41, AToZ(S_41), 26);
-    add_transition(S_41, aToZ(S_41), 26);
-    add_transition(S_41, zeroToNine(S_42), 10);
-    theta(S_41, S_43);
-    add_transition(S_42, zeroToNine(S_42), 10);
-    theta(S_42, S_43);
-    add_transition(S_44, aToZ(S_44), 26);
-    theta(S_44, S_45);
-    add_transition(S_46, aToZ(S_44), 26);
-    add_transition(S_46, twoToSeven(S_47), 6);
-    add_transition(S_47, bToD(S_47), 3);
-    add_transition(S_47, twoToSeven(S_48), 6);
-    theta(S_47, S_49);
-    add_transition(S_48, twoToSeven(S_48), 6);
-    theta(S_48, S_49);
-    add_transition(S_50, (transition[]){f('.', S_52)}, 1);
-    add_transition(S_50, zeroToNine(S_50), 10);
-    theta(S_50, S_51);
-    add_transition(S_52, zeroToNine(S_53), 10);
-    theta(S_52, S_61);
-    add_transition(S_53, zeroToNine(S_54), 10);
-    add_transition(S_54, (transition[]){f('E', S_56)}, 1);
-    theta(S_54, S_55);
-    add_transition(S_56, (transition[]){f('+', S_59), f('-', S_59)}, 2);
-    add_transition(S_56, zeroToNine(S_57), 10);
-    add_transition(S_57, zeroToNine(S_58), 10);
-    add_transition(S_59, zeroToNine(S_57), 10);
-}
+    int theta_size = sizeof(alphabets) / sizeof(char) - 1;
+    int total_size = theta_size + 1;
 
-void initialize_lookup_table()
-{
+    add_state(START, (transition[]){f('%', S_0), f(' ', S_2), f('@', S_19), f('&', S_22), f('#', S_25), f('*', S_28), f('>', S_29), f('<', S_32), f('/', S_39), f('\t', S_60), f('\n', S_3), f('~', S_4), f('[', S_5), f(']', S_6), f(',', S_7), f(';', S_8), f(':', S_9), f('.', S_10), f('(', S_11), f(')', S_12), f('=', S_14), f('+', S_15), f('-', S_16), f('!', S_17), f('_', S_40)}, 25);
+    add_state(START, bToD(S_46), 3);
+    add_state(START, zeroToNine(S_50), 10);
+    add_state(START, aToZExceptBToD(S_44), 23);
+    add_state(S_0, (transition[]){f('\n', S_1)}, 1);
+    add_state(S_0, theta('\n', S_0), theta_size);
+    add_state(S_13, (transition[]){f('=', S_14)}, 1);
+    add_state(S_17, (transition[]){f('=', S_18)}, 1);
+    add_state(S_19, (transition[]){f('@', S_20)}, 1);
+    add_state(S_20, (transition[]){f('@', S_21)}, 1);
+    add_state(S_22, (transition[]){f('&', S_23)}, 1);
+    add_state(S_23, (transition[]){f('&', S_24)}, 1);
+    add_state(S_25, aToZ(S_26), 26);
+    add_state(S_26, aToZ(S_26), 26);
+    add_state(S_26, theta44(S_27), theta_size - 9);
+    add_state(S_29, (transition[]){f('=', S_31)}, 1);
+    add_state(S_29, theta('=', S_30), theta_size);
+    add_state(S_32, (transition[]){f('=', S_34), f('-', S_35)}, 2);
+    add_state(S_32, theta32(S_33), theta_size - 1);
+    add_state(S_35, (transition[]){f('-', S_37)}, 1);
+    add_state(S_35, theta('-', S_36), theta_size);
+    add_state(S_37, (transition[]){f('-', S_38)}, 1);
+    add_state(S_40, AToZ(S_41), 52);
+    add_state(S_41, AToZ(S_41), 52);
+    add_state(S_41, aToZ(S_41), 26);
+    add_state(S_41, zeroToNine(S_42), 10);
+    add_state(S_41, theta41(S_43), total_size - 26 - 26 - 10);
+    add_state(S_42, theta42(S_43), theta_size - 9);
+    add_state(S_42, zeroToNine(S_42), 10);
+    add_state(S_44, aToZ(S_44), 26);
+    add_state(S_44, theta44(S_45), theta_size - 25);
+    add_state(S_46, aToZ(S_44), 26);
+    add_state(S_46, twoToSeven(S_47), 6);
+    add_state(S_47, bToD(S_47), 3);
+    add_state(S_47, theta47(S_49), total_size - 6 - 3);
+    add_state(S_47, twoToSeven(S_48), 6);
+    add_state(S_48, theta48(S_49), theta_size - 5);
+    add_state(S_48, twoToSeven(S_48), 6);
+    add_state(S_50, (transition[]){f('.', S_52)}, 1);
+    add_state(S_50, theta50(S_51), theta_size - 10);
+    add_state(S_50, zeroToNine(S_50), 10);
+    add_state(S_52, theta52(S_61), theta_size - 9);
+    add_state(S_54, theta('E', S_55), theta_size);
+    add_state(S_52, zeroToNine(S_53), 10);
+    add_state(S_53, zeroToNine(S_54), 10);
+    add_state(S_54, (transition[]){f('E', S_56)}, 1);
+    add_state(S_54, theta('E', S_61), theta_size);
+    add_state(S_56, (transition[]){f('+', S_59), f('-', S_59)}, 2);
+    add_state(S_56, zeroToNine(S_57), 10);
+    add_state(S_57, zeroToNine(S_58), 10);
+    add_state(S_59, zeroToNine(S_57), 10);
+
+    // look_up_table
     look_up_table = getTrieNode();
+
     insert(look_up_table, "with", TK_WITH);
     insert(look_up_table, "parameters", TK_PARAMETERS);
     insert(look_up_table, "end", TK_END);
@@ -274,18 +397,13 @@ void initialize_lookup_table()
 // print the graph, for debugging
 void print_graph()
 {
-    FILE *fp = fopen("graph.txt", "w");
     for (int i = 0; i < MAX_STATES; i++)
     {
-        // blue("%d : ", i);
-        fprintf(fp, "%d : ", i);
+        printf("State %d\n", i);
         for (int j = 0; j < states[i].length; j++)
         {
-            // blue("\t[%c -> %d] ", states[i].transitions[j]->next_char, states[i].transitions[j]->next_state->state_id);
-            fprintf(fp, "\t[%c -> %d] ", states[i].transitions[j]->next_char, states[i].transitions[j]->next_state->state_id);
+            printf("  %c\n", states[i].transitions[j]->next_char);
         }
-        // blue("\n\n\n");
-        fprintf(fp, "\n\n\n");
     }
 }
 
@@ -326,7 +444,7 @@ tokenInfo getNextToken(twinBuffer buffer)
     tokens->tokens = (int *)malloc(MAX_BUFFER_SIZE * sizeof(int));
     tokens->token_count = 0;
 
-    char keyword[30];
+    char keyword[15];
 
     printf("%s\n", buffer->secondary_buffer);
 
@@ -345,7 +463,7 @@ tokenInfo getNextToken(twinBuffer buffer)
         curr_state = get_next_state(curr_state, buffer->secondary_buffer[till]);
         printf("%d %c he\n", curr_state->state_id, buffer->secondary_buffer[till]);
         till -= curr_state->retract_count;
-        if (curr_state->token != TK_NOTOKEN)
+        if (curr_state->is_final_state)
         {
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
@@ -372,32 +490,32 @@ tokenInfo getNextToken(twinBuffer buffer)
     while (buffer->primary_buffer_index < MAX_BUFFER_SIZE && buffer->primary_buffer[buffer->primary_buffer_index] != '\0')
     {
         curr_state = get_next_state(curr_state, buffer->primary_buffer[buffer->primary_buffer_index]);
+        green("%d\n", curr_state->state_id);
+        // printf("%d %c \n", curr_state->state_id, buffer->primary_buffer[buffer->primary_buffer_index]);
         if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n')
         {
-            buffer->line_count++;
+            line_count++;
         }
-
         buffer->primary_buffer_index -= curr_state->retract_count;
-        if (curr_state->token != TK_NOTOKEN)
+        if (curr_state->is_final_state)
         {
-
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
-                memset(keyword, '\0', 30);
+                memset(keyword, '\0', 15);
                 strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + curr_state->retract_count, token_len);
-                green("%s\n", keyword);
+                // curr_state = &states[search(look_up_table, keyword)];
+                // printf("%d Word ID\n", search(look_up_table, keyword));
+                printf("%s Word\n", keyword);
             }
-
-            tokens->tokens[tokens->token_count] = curr_state->token;
+            tokens->tokens[tokens->token_count] = curr_state->state_id;
             tokens->token_count++;
             curr_state = &states[START];
             token_len = 0;
         }
-
         token_len++;
         buffer->primary_buffer_index++;
+        // prev_state = curr_state;
     }
-
     if (curr_state == &states[S_0])
     {
         strncpy(buffer->secondary_buffer, "\0", 1);
@@ -431,9 +549,6 @@ state get_next_state(state current_state, char next_char)
 int main()
 {
     initialize_states();
-    initialize_transitions();
-    initialize_lookup_table();
-    print_graph();
     FILE *fp = fopen("t1.txt", "r");
     FILE *new_fp = getStream(fp);
     fclose(new_fp);
