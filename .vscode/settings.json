@@ -4,6 +4,7 @@
     "lexerdef.h": "c",
     "stdio.h": "c",
     "string.h": "c",
-    "salad.h": "c"
+    "salad.h": "c",
+    "stdbool.h": "c"
   }
 }

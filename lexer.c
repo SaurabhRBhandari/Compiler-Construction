@@ -105,7 +105,6 @@ transition *aToZ(state_id next_state)
     }
     return transitions;
 }
-
 transition *AToZ(state_id next_state)
 {
     int size = 52;
@@ -238,6 +237,7 @@ void initialize_states()
     states[S_51].retract_count = 1;
     states[S_55].retract_count = 1;
     states[S_61].retract_count = 2;
+    states[INVALID].retract_count = 1;
 }
 
 void initialize_transitions()
@@ -365,7 +365,7 @@ FILE *getStream(FILE *fp)
         tokenInfo info = getNextToken(buffer);
         for (int i = 0; i < info->token_count; i++)
         {
-            fprintf(new_fp, "Line: %d,\t  Lexeme: %s,\t Token: %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
+            fprintf(new_fp, "Line: %d,  Lexeme: %s, Token: %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
         }
     }
     fclose(fp);
@@ -384,27 +384,41 @@ tokenInfo getNextToken(twinBuffer buffer)
 
     char *keyword = (char *)malloc(100 * sizeof(char));
 
-    // printf("%s\n", buffer->secondary_buffer);
-
-    // printf("%s\n", buffer->primary_buffer);
-
     int till = 0;
 
     int is_filled = buffer->secondary_buffer_index > 0;
 
     int token_len = 0;
     int token_count = 0;
+    int next = 1;
 
     while (till < buffer->secondary_buffer_index)
     {
 
         curr_state = get_next_state(curr_state, buffer->secondary_buffer[till]);
         printf("%d %c he\n", curr_state->state_id, buffer->secondary_buffer[till]);
+        token_len++;
+        if (curr_state->token == TK_INVALID)
+        {
+            int next = (token_len == 1);
+            buffer->primary_buffer_index -= curr_state->retract_count;
+            token_len -= curr_state->retract_count;
+            memset(keyword, '\0', 30);
+            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+            tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
+            tokens->token_count++;
+            buffer->primary_buffer_index++;
+            buffer->primary_buffer_index += next;
+            token_len = 0;
+            curr_state = &states[START];
+            continue;
+        }
         till -= curr_state->retract_count;
+        token_len -= curr_state->retract_count;
         if (curr_state->token != -1)
         {
             memset(keyword, '\0', 30);
-            strncpy(keyword, buffer->secondary_buffer + till - token_len, token_len);
+            strncpy(keyword, buffer->secondary_buffer + till - token_len + 1, token_len);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
                 token_id tk = search(look_up_table, keyword);
@@ -419,10 +433,6 @@ tokenInfo getNextToken(twinBuffer buffer)
             }
             curr_state = &states[START];
             token_len = 0;
-        }
-        else
-        {
-            token_len++;
         }
         till++;
         prev_state = curr_state;
@@ -438,16 +448,34 @@ tokenInfo getNextToken(twinBuffer buffer)
     {
 
         curr_state = get_next_state(curr_state, buffer->primary_buffer[buffer->primary_buffer_index]);
-        if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n')
+        green("%c %d\n", buffer->primary_buffer[buffer->primary_buffer_index], buffer->primary_buffer_index);
+        token_len++;
+        if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n' && curr_state->retract_count == 0)
         {
             buffer->line_count++;
         }
+        if (curr_state->token == TK_INVALID)
+        {
+            int next = (token_len == 1);
+            buffer->primary_buffer_index -= curr_state->retract_count;
+            token_len -= curr_state->retract_count;
+            memset(keyword, '\0', 30);
+            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+            tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
+            tokens->token_count++;
+            buffer->primary_buffer_index++;
+            buffer->primary_buffer_index += next;
+            token_len = 0;
+            curr_state = &states[START];
+            continue;
+        }
         buffer->primary_buffer_index -= curr_state->retract_count;
+        token_len -= curr_state->retract_count;
         if (curr_state->token != -1)
         {
 
             memset(keyword, '\0', 30);
-            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + curr_state->retract_count, token_len + (token_len == 0));
+            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len);
             green("%s %d %d\n", keyword, token_len, buffer->primary_buffer_index);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
@@ -463,10 +491,6 @@ tokenInfo getNextToken(twinBuffer buffer)
             }
             curr_state = &states[START];
             token_len = 0;
-        }
-        else
-        {
-            token_len++;
         }
         buffer->primary_buffer_index++;
     }
@@ -490,14 +514,28 @@ tokenInfo getNextToken(twinBuffer buffer)
 
 state get_next_state(state current_state, char next_char)
 {
-
+    bool flag = false;
+    for (int i = 0; i < ALPHABET_SIZE; i++)
+    {
+        if (ALPHABETS[i] == next_char)
+        {
+            flag = true;
+            break;
+        }
+    }
+    if (!flag)
+    {
+        return &states[INVALID];
+    }
     for (int i = 0; i < current_state->length; i++)
     {
         if (current_state->transitions[i]->next_char == next_char)
         {
+            blue("1. %d %c \n", current_state->token, next_char);
             return current_state->transitions[i]->next_state;
         }
     }
+    blue("2. %d %c \n", current_state->token, next_char);
     return &states[INVALID];
 }
 
