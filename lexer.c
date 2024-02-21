@@ -4,6 +4,7 @@
 #endif
 
 // TODO: move trie to other file
+// TODO: Deal with function_id and variable_id (S_45)
 #define ALPHABET 27
 trie getTrieNode(void)
 {
@@ -48,6 +49,16 @@ token_id search(trie root, const char *key)
     return curr->token;
 }
 #undef ALPHABET
+
+token getNewToken(token_id id, int lc, char *lexeme)
+{
+    token newToken = (token)malloc(sizeof(Token));
+    newToken->tk = id;
+    newToken->lc = lc;
+    newToken->lexeme = (char *)(malloc(30 * sizeof(char)));
+    strncpy(newToken->lexeme, lexeme, strlen(lexeme));
+    return newToken;
+}
 
 void add_transition(state_id state, transition *transitions, int transition_count)
 {
@@ -178,16 +189,60 @@ void initialize_states()
         states[i].length = 0;
         states[i].state_id = i;
         states[i].retract_count = 0;
-        states[i].token = TK_NOTOKEN;
+        states[i].token = -1;
         states[i].transitions = NULL;
     }
-    // TODO: Map tokens to corresponding states and retract counts
+    states[INVALID].token = TK_INVALID;
+    states[S_1].token = TK_NOTOKEN;
+    states[S_2].token = TK_NOTOKEN;
+    states[S_3].token = TK_NOTOKEN;  // TODO: lc++
+    states[S_43].token = TK_NOTOKEN; // TODO: lookup
+    states[S_45].token = TK_NOTOKEN; // TODO: lookup
+    states[S_60].token = TK_NOTOKEN;
+    states[S_4].token = TK_NOT;
+    states[S_5].token = TK_SQL;
+    states[S_6].token = TK_SQR;
+    states[S_7].token = TK_COMMA;
+    states[S_8].token = TK_SEM;
+    states[S_9].token = TK_COLON;
+    states[S_10].token = TK_DOT;
+    states[S_11].token = TK_OP;
+    states[S_12].token = TK_CL;
+    states[S_14].token = TK_EQ;
+    states[S_15].token = TK_PLUS;
+    states[S_16].token = TK_MINUS;
+    states[S_18].token = TK_NE;
+    states[S_21].token = TK_OR;
+    states[S_24].token = TK_AND;
+    states[S_27].token = TK_RUID;
+    states[S_28].token = TK_MUL;
+    states[S_30].token = TK_GT;
+    states[S_31].token = TK_GE;
+    states[S_33].token = TK_LT;
+    states[S_34].token = TK_LE;
+    states[S_36].token = TK_LT;
+    states[S_38].token = TK_ASSIGNOP;
+    states[S_39].token = TK_DIV;
+    states[S_49].token = TK_ID;
+    states[S_51].token = TK_NUM;
+    states[S_55].token = TK_RNUM;
+    states[S_58].token = TK_RNUM;
+    states[S_61].token = TK_NUM;
+    states[S_27].retract_count = 1;
+    states[S_30].retract_count = 1;
+    states[S_33].retract_count = 1;
+    states[S_36].retract_count = 2;
+    states[S_43].retract_count = 1;
+    states[S_45].retract_count = 1;
+    states[S_49].retract_count = 1;
+    states[S_51].retract_count = 1;
+    states[S_55].retract_count = 1;
+    states[S_61].retract_count = 2;
 }
 
 void initialize_transitions()
 {
-    // TODO: verify DFA
-    add_transition(START, (transition[]){f('%', S_0), f(' ', S_2), f('@', S_19), f('&', S_22), f('#', S_25), f('*', S_28), f('>', S_29), f('<', S_32), f('/', S_39), f('\t', S_60), f('\n', S_3), f('~', S_4), f('[', S_5), f(']', S_6), f(',', S_7), f(';', S_8), f(':', S_9), f('.', S_10), f('(', S_11), f(')', S_12), f('=', S_14), f('+', S_15), f('-', S_16), f('!', S_17), f('_', S_40)}, 25);
+    add_transition(START, (transition[]){f('%', S_0), f(' ', S_2), f('\n', S_3), f('~', S_4), f('[', S_5), f(']', S_6), f(',', S_7), f(';', S_8), f(':', S_9), f('.', S_10), f('(', S_11), f(')', S_12), f('=', S_13), f('+', S_15), f('-', S_16), f('!', S_17), f('@', S_19), f('&', S_22), f('#', S_25), f('*', S_28), f('>', S_29), f('<', S_32), f('/', S_39), f('_', S_40), f('\t', S_60)}, 25);
     add_transition(START, bToD(S_46), 3);
     add_transition(START, zeroToNine(S_50), 10);
     add_transition(START, aToZExceptBToD(S_44), 23);
@@ -210,8 +265,7 @@ void initialize_transitions()
     theta(S_35, S_36);
     add_transition(S_37, (transition[]){f('-', S_38)}, 1);
     add_transition(S_40, AToZ(S_41), 52);
-    add_transition(S_41, AToZ(S_41), 26);
-    add_transition(S_41, aToZ(S_41), 26);
+    add_transition(S_41, AToZ(S_41), 52);
     add_transition(S_41, zeroToNine(S_42), 10);
     theta(S_41, S_43);
     add_transition(S_42, zeroToNine(S_42), 10);
@@ -254,6 +308,7 @@ void initialize_lookup_table()
     insert(look_up_table, "_main", TK_MAIN);
     insert(look_up_table, "global", TK_GLOBAL);
     insert(look_up_table, "parameter", TK_PARAMETER);
+    insert(look_up_table, "list", TK_LIST);
     insert(look_up_table, "input", TK_INPUT);
     insert(look_up_table, "output", TK_OUTPUT);
     insert(look_up_table, "int", TK_INT);
@@ -298,6 +353,7 @@ FILE *getStream(FILE *fp)
     }
     twinBuffer buffer = (twinBuffer)malloc(sizeof(struct TwinBuffer));
     buffer->secondary_buffer_index = 0;
+    buffer->line_count = 1;
     FILE *new_fp = fopen("a.salad", "w");
     if (new_fp == NULL)
     {
@@ -309,7 +365,7 @@ FILE *getStream(FILE *fp)
         tokenInfo info = getNextToken(buffer);
         for (int i = 0; i < info->token_count; i++)
         {
-            fprintf(new_fp, "%d ", info->tokens[i]);
+            fprintf(new_fp, "Line: %d,\t  Lexeme: %s,\t Token: %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
         }
     }
     fclose(fp);
@@ -323,14 +379,14 @@ tokenInfo getNextToken(twinBuffer buffer)
     buffer->primary_buffer_index = 0;
 
     tokenInfo tokens = (tokenInfo)malloc(sizeof(TokenInfo));
-    tokens->tokens = (int *)malloc(MAX_BUFFER_SIZE * sizeof(int));
+    tokens->tokens = (token *)malloc(MAX_BUFFER_SIZE * sizeof(token));
     tokens->token_count = 0;
 
-    char keyword[30];
+    char *keyword = (char *)malloc(100 * sizeof(char));
 
-    printf("%s\n", buffer->secondary_buffer);
+    // printf("%s\n", buffer->secondary_buffer);
 
-    printf("%s\n", buffer->primary_buffer);
+    // printf("%s\n", buffer->primary_buffer);
 
     int till = 0;
 
@@ -345,20 +401,29 @@ tokenInfo getNextToken(twinBuffer buffer)
         curr_state = get_next_state(curr_state, buffer->secondary_buffer[till]);
         printf("%d %c he\n", curr_state->state_id, buffer->secondary_buffer[till]);
         till -= curr_state->retract_count;
-        if (curr_state->token != TK_NOTOKEN)
+        if (curr_state->token != -1)
         {
+            memset(keyword, '\0', 30);
+            strncpy(keyword, buffer->secondary_buffer + till - token_len, token_len);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
-                memset(keyword, '\0', 15);
-                strncpy(keyword, buffer->secondary_buffer + till - token_len, token_len);
-                curr_state = &states[search(look_up_table, keyword)];
+                token_id tk = search(look_up_table, keyword);
+                tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
+                tokens->token_count++;
+                green("%s\n", keyword);
             }
-            tokens->tokens[tokens->token_count] = curr_state->state_id;
-            tokens->token_count++;
+            if (curr_state->token != TK_NOTOKEN)
+            {
+                tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
+                tokens->token_count++;
+            }
             curr_state = &states[START];
             token_len = 0;
         }
-        token_len++;
+        else
+        {
+            token_len++;
+        }
         till++;
         prev_state = curr_state;
     }
@@ -371,41 +436,49 @@ tokenInfo getNextToken(twinBuffer buffer)
     // read from primary buffer
     while (buffer->primary_buffer_index < MAX_BUFFER_SIZE && buffer->primary_buffer[buffer->primary_buffer_index] != '\0')
     {
+
         curr_state = get_next_state(curr_state, buffer->primary_buffer[buffer->primary_buffer_index]);
         if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n')
         {
             buffer->line_count++;
         }
-
         buffer->primary_buffer_index -= curr_state->retract_count;
-        if (curr_state->token != TK_NOTOKEN)
+        if (curr_state->token != -1)
         {
 
+            memset(keyword, '\0', 30);
+            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + curr_state->retract_count, token_len + (token_len == 0));
+            green("%s %d %d\n", keyword, token_len, buffer->primary_buffer_index);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
-                memset(keyword, '\0', 30);
-                strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + curr_state->retract_count, token_len);
+                token_id tk = search(look_up_table, keyword);
+                tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
+                tokens->token_count++;
                 green("%s\n", keyword);
             }
-
-            tokens->tokens[tokens->token_count] = curr_state->token;
-            tokens->token_count++;
+            if (curr_state->token != TK_NOTOKEN)
+            {
+                tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
+                tokens->token_count++;
+            }
             curr_state = &states[START];
             token_len = 0;
         }
-
-        token_len++;
+        else
+        {
+            token_len++;
+        }
         buffer->primary_buffer_index++;
     }
 
     if (curr_state == &states[S_0])
     {
-        strncpy(buffer->secondary_buffer, "\0", 1);
+        strncpy(buffer->secondary_buffer, "%", 1);
         buffer->secondary_buffer_index = 1;
     }
     else if (curr_state != &states[START])
     {
-        strncpy(buffer->secondary_buffer, buffer->primary_buffer + MAX_BUFFER_SIZE - 1 - token_len, token_len);
+        strncpy(buffer->secondary_buffer, buffer->primary_buffer + MAX_BUFFER_SIZE - 1 - token_len, token_len + (token_len == 0));
         buffer->secondary_buffer_index = token_len;
     }
     else
@@ -425,7 +498,7 @@ state get_next_state(state current_state, char next_char)
             return current_state->transitions[i]->next_state;
         }
     }
-    return &states[TK_INVALID];
+    return &states[INVALID];
 }
 
 int main()
@@ -433,8 +506,7 @@ int main()
     initialize_states();
     initialize_transitions();
     initialize_lookup_table();
-    print_graph();
-    FILE *fp = fopen("t1.txt", "r");
+    FILE *fp = fopen("test_cases/t1.txt", "r");
     FILE *new_fp = getStream(fp);
     fclose(new_fp);
     return 0;

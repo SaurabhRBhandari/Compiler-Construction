@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX_BUFFER_SIZE 30
-#define MAX_STATES 63
+#define MAX_BUFFER_SIZE 1000
+#define MAX_STATES 64
 
 const char ALPHABETS[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\n', '\t', '~', '(', '[', ']', ')', '<', '>', '!', '@', '#', '%', '&', '*', '_', '+', '-', '/', '=', ';', ':', '.', ','};
 const int ALPHABET_SIZE = sizeof(ALPHABETS) / sizeof(ALPHABETS[0]);
@@ -74,6 +74,7 @@ typedef enum state_id
     S_60,
     S_61,
     START,
+    INVALID,
 } state_id;
 
 typedef enum token_id
@@ -147,16 +148,21 @@ typedef struct TwinBuffer
     int secondary_buffer_index;
     int line_count;
 } TwinBuffer;
+typedef struct Token
+{
+    token_id tk;
+    int lc;
+    char *lexeme;
+} Token;
 
 typedef struct TokenInfo
 {
-    int *tokens;
+    struct Token **tokens;
     int token_count;
 } TokenInfo;
 
 typedef struct State
 {
-    // int state_id;
     struct Transition **transitions;
     int length;
     token_id token;
@@ -173,6 +179,7 @@ typedef struct State *state;
 typedef struct Transition *transition;
 typedef struct TwinBuffer *twinBuffer;
 typedef struct TokenInfo *tokenInfo;
+typedef struct Token *token;
 
 State states[MAX_STATES];
 
