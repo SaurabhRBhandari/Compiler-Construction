@@ -40,6 +40,10 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
             {
                 int current = queue[front];
                 front++;
+                if(computed[current])
+                {
+                    continue;
+                }
                 variable *v = G.variables[current];
                 bool is_computed = true;
                 while (v != NULL)
@@ -56,7 +60,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                             }
                             else
                             {
-                                if (computed[v->tokens[k]->name] == false)
+                                if (computed[v->tokens[k]->name] == false && current!=v->tokens[k]->name)
                                 {
                                     queue[rear] = v->tokens[k]->name;
                                     rear++;
@@ -569,7 +573,6 @@ void printParseTree(table T, FirstAndFollow F, grammer G, char *input, int n)
 void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
 {
     // finding the index of the lhs variable
-    printf("p\n");
     int index;
     for (int i = 0; i < G->no_of_variables; i++)
     {
@@ -579,7 +582,6 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
             break;
         }
     }
-    printf("q\n");
     // iterate through the rules of the variable to reach the end of the linked list
     variable *v;
     if (G->variables[index] == NULL)
@@ -597,7 +599,6 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
         v->next = (variable *)malloc(sizeof(variable));
         v = v->next;
     }
-    printf("r\n");
     v->no_of_tokens = no_of_tokens;
     v->rule_no = G->no_of_rules + 1;
     for (int i = 0; i < no_of_tokens; i++)
@@ -615,7 +616,6 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
             }
         }
     }
-    printf("s\n");
     // print the rule
     v->next = NULL;
     G->no_of_rules++;
@@ -781,7 +781,7 @@ int main()
     grammySays(&G, declaration, 6, (int[]){TK_TYPE, dataType, TK_COLON, TK_ID, global_or_not, TK_SEM});
     grammySays(&G, global_or_not, 2, (int[]){TK_COLON, TK_GLOBAL});
     grammySays(&G, global_or_not, 1, (int[]){EPSILON});
-    grammySays(&G, otherStmts, 2, (int[]){stmts, otherStmts});
+    grammySays(&G, otherStmts, 2, (int[]){stmt, otherStmts});
     grammySays(&G, otherStmts, 1, (int[]){EPSILON});
     grammySays(&G, stmts, 1, (int[]){assignmentStmt});
     grammySays(&G, stmts, 1, (int[]){iterativeStmt});
