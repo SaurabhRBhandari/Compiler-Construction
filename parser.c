@@ -172,240 +172,240 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
 
     // compute follow sets
     // Assumption 0 is the start variable and therefore adding $ in its follow set represeneted by INT_MAX
-    // F.elements[0].follow[F.elements[0].no_of_follow] = INT_MAX;
-    // F.elements[0].follow_rule[F.elements[0].no_of_follow] = 0;
-    // F.elements[0].no_of_follow++;
-    // for (int i = 0; i < G.no_of_variables; i++)
-    // {
-    //     // iterate through all the starting variables
-    //     variable *v = G.variables[i];
-    //     while (v != NULL)
-    //     {
-    //         // iterate through all the rules of the variable
-    //         if (v->no_of_tokens > 0)
-    //         {
-    //             for (int k = 0; k < v->no_of_tokens; k++)
-    //             {
-    //                 // iterate through all the tokens of the rule
-    //                 if (v->tokens[k]->is_terminal == 0)
-    //                 {
-    //                     // if the token is a variable
-    //                     int c = -2;
-    //                     for (int i = 0; i < F.no_of_terminals; i++)
-    //                     {
-    //                         if (F.start_variable[i] == v->tokens[k]->name)
-    //                         {
-    //                             c = i;
-    //                             break;
-    //                         }
-    //                     }
-    //                     if (k < v->no_of_tokens - 1)
-    //                     {
-    //                         // if the token is not the last token of the rule
-    //                         if (v->tokens[k + 1]->is_terminal == 1)
-    //                         {
-    //                             // if the next token is a terminal
-    //                             // check if the terminal is already present in the follow set of the current token
-    //                             bool is_present = false;
-    //                             for (int l = 0; l < F.elements[c].no_of_follow; l++)
-    //                             {
-    //                                 if (F.elements[c].follow[l] == v->tokens[k + 1]->name)
-    //                                 {
-    //                                     is_present = true;
-    //                                     break;
-    //                                 }
-    //                             }
-    //                             // if the terminal is not present in the follow set of the current token then add it to the follow set
-    //                             if (is_present == false)
-    //                             {
-    //                                 F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[k + 1]->name;
-    //                                 F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
-    //                                 F.elements[c].no_of_follow++;
-    //                             }
-    //                         }
-    //                         else
-    //                         {
-    //                             // if the next token is a variable
-    //                             int l = k + 1;
-    //                             bool is_epsilon = true;
-    //                             while (l < v->no_of_tokens && is_epsilon == true)
-    //                             {
-    //                                 // iterate through all the tokens after the token k
-    //                                 if (v->tokens[l]->is_terminal == 1)
-    //                                 {
-    //                                     // if the token is a terminal
-    //                                     // check if the terminal is already present in the first set of the current token
-    //                                     bool is_present = false;
-    //                                     is_epsilon = false;
-    //                                     for (int r = 0; r < F.elements[c].no_of_first; r++)
-    //                                     {
-    //                                         if (F.elements[c].first[r] == v->tokens[l]->name)
-    //                                         {
-    //                                             is_present = true;
-    //                                             break;
-    //                                         }
-    //                                     }
-    //                                     // if the terminal is not present in the first set of the next token then add it to the follow set of the current token
-    //                                     if (is_present == false)
-    //                                     {
-    //                                         F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[l]->name;
-    //                                         F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
-    //                                         F.elements[c].no_of_follow++;
-    //                                     }
-    //                                     is_epsilon = false;
-    //                                 }
-    //                                 else
-    //                                 {
-    //                                     // if the token is a variable
-    //                                     int lindex = -2;
-    //                                     for (int i = 0; i < F.no_of_terminals; i++)
-    //                                     {
-    //                                         if (F.start_variable[i] == v->tokens[l]->name)
-    //                                         {
-    //                                             lindex = i;
-    //                                             break;
-    //                                         }
-    //                                     }
-    //                                     is_epsilon = false;
-    //                                     for (int r = 0; r < F.elements[lindex].no_of_first; r++)
-    //                                     {
-    //                                         if (F.elements[lindex].first[r] == EPSILON)
-    //                                         {
-    //                                             is_epsilon = true;
-    //                                             continue;
-    //                                         }
-    //                                         bool is_present = false;
-    //                                         for (int m = 0; m < F.elements[c].no_of_follow; m++)
-    //                                         {
-    //                                             if (F.elements[c].follow[m] == F.elements[lindex].first[r])
-    //                                             {
-    //                                                 is_present = true;
-    //                                                 break;
-    //                                             }
-    //                                         }
-    //                                         if (is_present == false)
-    //                                         {
-    //                                             F.elements[c].follow[F.elements[c].no_of_follow] = F.elements[lindex].first[r];
-    //                                             F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
-    //                                             F.elements[c].no_of_follow++;
-    //                                         }
-    //                                     }
-    //                                 }
-    //                                 l++;
-    //                             }
-    //                             // if is_epsilon is true then add the lhs variable to the follow set of the current token which will be computed later
-    //                             if (is_epsilon == true)
-    //                             {
-    //                                 bool is_present = false;
-    //                                 for (int r = 0; r < F.elements[c].no_of_follow; r++)
-    //                                 {
-    //                                     if (F.elements[c].follow[r] == G.start_variable[i])
-    //                                     {
-    //                                         is_present = true;
-    //                                         break;
-    //                                     }
-    //                                 }
-    //                                 if (is_present == false)
-    //                                 {
-    //                                     F.elements[c].follow[F.elements[c].no_of_follow] = G.start_variable[i];
-    //                                     F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
-    //                                     F.elements[c].no_of_follow++;
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                     // if the token is the last token of the rule
-    //                     else
-    //                     {
-    //                         bool is_present = false;
-    //                         for (int l = 0; l < F.elements[c].no_of_follow; l++)
-    //                         {
-    //                             if (F.elements[c].follow[l] == G.start_variable[i])
-    //                             {
-    //                                 is_present = true;
-    //                                 break;
-    //                             }
-    //                         }
-    //                         if (is_present == false)
-    //                         {
-    //                             F.elements[c].follow[F.elements[c].no_of_follow] = G.start_variable[i];
-    //                             F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
-    //                             F.elements[c].no_of_follow++;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         v = v->next;
-    //     }
-    // }
-    // // complete follow sets by adding the follow sets of non-terminal to the follow sets of the variables
-    // //  make a list of non-terminals
-    // bool non_terminals[F.no_of_terminals];
-    // for (int i = 0; i < F.no_of_terminals; i++)
-    // {
-    //     non_terminals[i] = false;
-    // }
-    // for (int i = 0; i < G.no_of_variables; i++)
-    // {
-    //     non_terminals[G.start_variable[i]] = true;
-    // }
-    // // iterate through all follow sets
-    // for (int i = 0; i < F.no_of_variables; i++)
-    // {
-    //     if (computed[F.start_variable[i]] == false)
-    //     {
-    //         // if the follow set is not computed iterate through the follow set and check if there is a non-terminal
-    //         for (int j = 0; j < F.elements[i].no_of_follow; j++)
-    //         {
-    //             if (F.elements[i].follow[j] != INT_MAX && non_terminals[F.elements[i].follow[j]] == true)
-    //             {
-    //                 // if there is a non-terminal then add the follow set of the non-terminal to the follow set of the current token
-    //                 printf("%d", F.elements[i].follow[j]);
-    //                 for (int k = 0; k < F.elements[F.elements[i].follow[j]].no_of_follow; k++)
-    //                 {
-    //                     bool is_present = false;
-    //                     for (int l = 0; l < F.elements[i].no_of_follow; l++)
-    //                     {
-    //                         if (F.elements[i].follow[l] == F.elements[F.elements[i].follow[j]].follow[k])
-    //                         {
-    //                             is_present = true;
-    //                             break;
-    //                         }
-    //                     }
-    //                     if (is_present == false)
-    //                     {
-    //                         F.elements[i].follow[F.elements[i].no_of_follow] = F.elements[F.elements[i].follow[j]].follow[k];
-    //                         F.elements[i].follow_rule[F.elements[i].no_of_follow] = F.elements[F.elements[i].follow[j]].follow_rule[k];
-    //                         F.elements[i].no_of_follow++;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         computed[F.start_variable[i]] = true;
-    //     }
-    // }
-    // // iterate through all the follow sets
-    // // print non_terminals
-    // for (int i = 0; i < F.no_of_variables; i++)
-    // {
-    //     // iterate through the follow set to check if a non_terminal is present
-    //     for (int j = 0; j < F.elements[i].no_of_follow; j++)
-    //     {
-    //         if (F.elements[i].follow[j] == INT_MAX)
-    //             continue;
-    //         if (non_terminals[F.elements[i].follow[j]] == true)
-    //         {
-    //             // if a non-terminal is present , remove it from the follow set
-    //             for (int k = j; k < F.elements[i].no_of_follow - 1; k++)
-    //             {
-    //                 F.elements[i].follow[k] = F.elements[i].follow[k + 1];
-    //                 F.elements[i].follow_rule[k] = F.elements[i].follow_rule[k + 1];
-    //             }
-    //             F.elements[i].no_of_follow--;
-    //         }
-    //     }
-    // }
+    F.elements[0].follow[F.elements[0].no_of_follow] = INT_MAX;
+    F.elements[0].follow_rule[F.elements[0].no_of_follow] = 0;
+    F.elements[0].no_of_follow++;
+    for (int i = 0; i < G.no_of_variables; i++)
+    {
+        // iterate through all the starting variables
+        variable *v = G.variables[i];
+        while (v != NULL)
+        {
+            // iterate through all the rules of the variable
+            if (v->no_of_tokens > 0)
+            {
+                for (int k = 0; k < v->no_of_tokens; k++)
+                {
+                    // iterate through all the tokens of the rule
+                    if (v->tokens[k]->is_terminal == 0)
+                    {
+                        // if the token is a variable
+                        int c = -2;
+                        for (int i = 0; i < F.no_of_terminals; i++)
+                        {
+                            if (F.start_variable[i] == v->tokens[k]->name)
+                            {
+                                c = i;
+                                break;
+                            }
+                        }
+                        if (k < v->no_of_tokens - 1)
+                        {
+                            // if the token is not the last token of the rule
+                            if (v->tokens[k + 1]->is_terminal == 1)
+                            {
+                                // if the next token is a terminal
+                                // check if the terminal is already present in the follow set of the current token
+                                bool is_present = false;
+                                for (int l = 0; l < F.elements[c].no_of_follow; l++)
+                                {
+                                    if (F.elements[c].follow[l] == v->tokens[k + 1]->name)
+                                    {
+                                        is_present = true;
+                                        break;
+                                    }
+                                }
+                                // if the terminal is not present in the follow set of the current token then add it to the follow set
+                                if (is_present == false)
+                                {
+                                    F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[k + 1]->name;
+                                    F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
+                                    F.elements[c].no_of_follow++;
+                                }
+                            }
+                            else
+                            {
+                                // if the next token is a variable
+                                int l = k + 1;
+                                bool is_epsilon = true;
+                                while (l < v->no_of_tokens && is_epsilon == true)
+                                {
+                                    // iterate through all the tokens after the token k
+                                    if (v->tokens[l]->is_terminal == 1)
+                                    {
+                                        // if the token is a terminal
+                                        // check if the terminal is already present in the first set of the current token
+                                        bool is_present = false;
+                                        is_epsilon = false;
+                                        for (int r = 0; r < F.elements[c].no_of_first; r++)
+                                        {
+                                            if (F.elements[c].first[r] == v->tokens[l]->name)
+                                            {
+                                                is_present = true;
+                                                break;
+                                            }
+                                        }
+                                        // if the terminal is not present in the first set of the next token then add it to the follow set of the current token
+                                        if (is_present == false)
+                                        {
+                                            F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[l]->name;
+                                            F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
+                                            F.elements[c].no_of_follow++;
+                                        }
+                                        is_epsilon = false;
+                                    }
+                                    else
+                                    {
+                                        // if the token is a variable
+                                        int lindex = -2;
+                                        for (int i = 0; i < F.no_of_terminals; i++)
+                                        {
+                                            if (F.start_variable[i] == v->tokens[l]->name)
+                                            {
+                                                lindex = i;
+                                                break;
+                                            }
+                                        }
+                                        is_epsilon = false;
+                                        for (int r = 0; r < F.elements[lindex].no_of_first; r++)
+                                        {
+                                            if (F.elements[lindex].first[r] == EPSILON)
+                                            {
+                                                is_epsilon = true;
+                                                continue;
+                                            }
+                                            bool is_present = false;
+                                            for (int m = 0; m < F.elements[c].no_of_follow; m++)
+                                            {
+                                                if (F.elements[c].follow[m] == F.elements[lindex].first[r])
+                                                {
+                                                    is_present = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (is_present == false)
+                                            {
+                                                F.elements[c].follow[F.elements[c].no_of_follow] = F.elements[lindex].first[r];
+                                                F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
+                                                F.elements[c].no_of_follow++;
+                                            }
+                                        }
+                                    }
+                                    l++;
+                                }
+                                // if is_epsilon is true then add the lhs variable to the follow set of the current token which will be computed later
+                                if (is_epsilon == true)
+                                {
+                                    bool is_present = false;
+                                    for (int r = 0; r < F.elements[c].no_of_follow; r++)
+                                    {
+                                        if (F.elements[c].follow[r] == G.start_variable[i])
+                                        {
+                                            is_present = true;
+                                            break;
+                                        }
+                                    }
+                                    if (is_present == false)
+                                    {
+                                        F.elements[c].follow[F.elements[c].no_of_follow] = G.start_variable[i];
+                                        F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
+                                        F.elements[c].no_of_follow++;
+                                    }
+                                }
+                            }
+                        }
+                        // if the token is the last token of the rule
+                        else
+                        {
+                            bool is_present = false;
+                            for (int l = 0; l < F.elements[c].no_of_follow; l++)
+                            {
+                                if (F.elements[c].follow[l] == G.start_variable[i])
+                                {
+                                    is_present = true;
+                                    break;
+                                }
+                            }
+                            if (is_present == false)
+                            {
+                                F.elements[c].follow[F.elements[c].no_of_follow] = G.start_variable[i];
+                                F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
+                                F.elements[c].no_of_follow++;
+                            }
+                        }
+                    }
+                }
+            }
+            v = v->next;
+        }
+    }
+    // complete follow sets by adding the follow sets of non-terminal to the follow sets of the variables
+    //  make a list of non-terminals
+    bool non_terminals[F.no_of_terminals];
+    for (int i = 0; i < F.no_of_terminals; i++)
+    {
+        non_terminals[i] = false;
+    }
+    for (int i = 0; i < G.no_of_variables; i++)
+    {
+        non_terminals[G.start_variable[i]] = true;
+    }
+    // iterate through all follow sets
+    for (int i = 0; i < F.no_of_variables; i++)
+    {
+        if (computed[F.start_variable[i]] == false)
+        {
+            // if the follow set is not computed iterate through the follow set and check if there is a non-terminal
+            for (int j = 0; j < F.elements[i].no_of_follow; j++)
+            {
+                if (F.elements[i].follow[j] != INT_MAX && non_terminals[F.elements[i].follow[j]] == true)
+                {
+                    // if there is a non-terminal then add the follow set of the non-terminal to the follow set of the current token
+                    printf("%d", F.elements[i].follow[j]);
+                    for (int k = 0; k < F.elements[F.elements[i].follow[j]].no_of_follow; k++)
+                    {
+                        bool is_present = false;
+                        for (int l = 0; l < F.elements[i].no_of_follow; l++)
+                        {
+                            if (F.elements[i].follow[l] == F.elements[F.elements[i].follow[j]].follow[k])
+                            {
+                                is_present = true;
+                                break;
+                            }
+                        }
+                        if (is_present == false)
+                        {
+                            F.elements[i].follow[F.elements[i].no_of_follow] = F.elements[F.elements[i].follow[j]].follow[k];
+                            F.elements[i].follow_rule[F.elements[i].no_of_follow] = F.elements[F.elements[i].follow[j]].follow_rule[k];
+                            F.elements[i].no_of_follow++;
+                        }
+                    }
+                }
+            }
+            computed[F.start_variable[i]] = true;
+        }
+    }
+    // iterate through all the follow sets
+    // print non_terminals
+    for (int i = 0; i < F.no_of_variables; i++)
+    {
+        // iterate through the follow set to check if a non_terminal is present
+        for (int j = 0; j < F.elements[i].no_of_follow; j++)
+        {
+            if (F.elements[i].follow[j] == INT_MAX)
+                continue;
+            if (non_terminals[F.elements[i].follow[j]] == true)
+            {
+                // if a non-terminal is present , remove it from the follow set
+                for (int k = j; k < F.elements[i].no_of_follow - 1; k++)
+                {
+                    F.elements[i].follow[k] = F.elements[i].follow[k + 1];
+                    F.elements[i].follow_rule[k] = F.elements[i].follow_rule[k + 1];
+                }
+                F.elements[i].no_of_follow--;
+            }
+        }
+    }
     return F;
 }
 
