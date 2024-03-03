@@ -1,0 +1,165 @@
+#include <stdbool.h>
+
+#define MAX_TOKENS 100
+
+typedef enum tokens
+{
+    program,
+    mainFunction,
+    otherFunctions,
+    function,
+    input_par,
+    output_par,
+    parameter_list,
+    dataType,
+    primitiveDatatype,
+    constructedDatatype,
+    remaining_list,
+    stmts,
+    typeDefinitions,
+    typeDefinition,
+    fieldDefinitions,
+    fieldDefinition,
+    moreFields,
+    declarations,
+    declaration,
+    global_or_not,
+    otherStmts,
+    stmt,
+    assignmentStmt,
+    singleOrRecId,
+    funCallStmt,
+    outputParameters,
+    inputParameters,
+    iterativeStmt,
+    conditionalStmt,
+    ioStmt,
+    arithmeticExpression,
+    operator,
+    booleanExpression,
+    var,
+    logicalOp,
+    relationalOp,
+    returnStmt,
+    optionalReturn,
+    idList,
+    more_ids,
+    definetypestmt,
+    A,
+    TK_NOTOKEN,
+    TK_INVALID,
+    TK_ASSIGNOP,
+    TK_COMMENT,
+    TK_FIELDID,
+    TK_ID,
+    TK_NUM,
+    TK_RNUM,
+    TK_FUNID,
+    TK_RUID,
+    TK_WITH,
+    TK_PARAMETERS,
+    TK_END,
+    TK_WHILE,
+    TK_UNION,
+    TK_ENDUNION,
+    TK_DEFINETYPE,
+    TK_AS,
+    TK_TYPE,
+    TK_MAIN,
+    TK_GLOBAL,
+    TK_PARAMETER,
+    TK_LIST,
+    TK_SQL,
+    TK_SQR,
+    TK_INPUT,
+    TK_OUTPUT,
+    TK_INT,
+    TK_REAL,
+    TK_COMMA,
+    TK_SEM,
+    TK_COLON,
+    TK_DOT,
+    TK_ENDWHILE,
+    TK_OP,
+    TK_CL,
+    TK_IF,
+    TK_THEN,
+    TK_ENDIF,
+    TK_READ,
+    TK_WRITE,
+    TK_RETURN,
+    TK_PLUS,
+    TK_MINUS,
+    TK_MUL,
+    TK_DIV,
+    TK_CALL,
+    TK_RECORD,
+    TK_ENDRECORD,
+    TK_ELSE,
+    TK_AND,
+    TK_OR,
+    TK_NOT,
+    TK_LT,
+    TK_LE,
+    TK_EQ,
+    TK_GT,
+    TK_GE,
+    TK_NE,
+} tokens;
+
+<<<<<<< HEAD
+typedef struct token{
+=======
+typedef struct token
+{
+>>>>>>> 3c88169b9e335dd7581c9a75b037d792f0cd7d23
+    int name;
+    int is_terminal;
+} token;
+
+typedef struct variable variable;
+typedef struct variable
+{
+    int no_of_tokens;
+    int rule_no;
+    token *tokens[MAX_TOKENS];
+    variable *next;
+} variable;
+
+typedef struct grammer
+{
+    int no_of_variables;
+    int no_of_terminals;
+    int no_of_rules;
+    int terminals[MAX_TOKENS];
+    int start_variable[MAX_TOKENS];
+    variable *variables[MAX_TOKENS];
+} grammer;
+
+typedef struct first_follow_element
+{
+    int no_of_first;
+    int no_of_follow;
+    int first[MAX_TOKENS];
+    int first_rule[MAX_TOKENS];
+    int follow[MAX_TOKENS];
+    int follow_rule[MAX_TOKENS];
+} first_follow_element;
+
+typedef struct FirstAndFollow
+{
+    int no_of_terminals;
+    int no_of_variables;
+    int start_variable[MAX_TOKENS];
+    int terminals[MAX_TOKENS];
+    first_follow_element elements[MAX_TOKENS];
+} FirstAndFollow;
+
+typedef struct table
+{
+    int no_of_rows;
+    int no_of_columns;
+    int row[MAX_TOKENS];
+    int column[MAX_TOKENS];
+    int table[MAX_TOKENS][MAX_TOKENS];
+} table;
