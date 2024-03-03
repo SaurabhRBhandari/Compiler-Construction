@@ -17,6 +17,9 @@ typedef struct variable{
 
 typedef struct grammer{
     int no_of_variables;
+    int no_of_terminals;
+    int no_of_rules;
+    int terminals[MAX_TOKENS];
     int start_variable[MAX_TOKENS];
     variable* variables[MAX_TOKENS];
 }grammer;
@@ -31,8 +34,10 @@ typedef struct first_follow_element{
 }first_follow_element;
 
 typedef struct FirstAndFollow{
-    int no_of_tokens;
-    int tokens[MAX_TOKENS];
+    int no_of_terminals;
+    int no_of_variables;
+    int start_variable[MAX_TOKENS];
+    int terminals[MAX_TOKENS];
     first_follow_element elements[MAX_TOKENS];
 }FirstAndFollow;
 
