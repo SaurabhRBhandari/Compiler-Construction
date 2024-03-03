@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MAX_BUFFER_SIZE 1000
+#define MAX_BUFFER_SIZE 50
 #define MAX_STATES 64
 
 const char ALPHABETS[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '\n', '\t', '~', '(', '[', ']', ')', '<', '>', '!', '@', '#', '%', '&', '*', '_', '+', '-', '/', '=', ';', ':', '.', ','};
@@ -211,28 +211,31 @@ token_id search(trie root, const char *key);
 
 trie look_up_table;
 
-#define yellow(x...)          \
-    {                         \
-        printf("\033[1;33m"); \
-        printf(x);            \
-        printf("\033[0m");    \
-    }
-#define red(x...)             \
-    {                         \
-        printf("\033[1;31m"); \
-        printf(x);            \
-        printf("\033[0m");    \
-    }
-#define green(x...)           \
-    {                         \
-        printf("\033[1;32m"); \
-        printf(x);            \
-        printf("\033[0m");    \
-    }
-#define blue(x...)            \
-    {                         \
-        printf("\033[1;34m"); \
-        printf(x);            \
-        printf("\033[0m");    \
-    }
-// #define blue(x...)
+// #define yellow(x...)          \
+//     {                         \
+//         printf("\033[1;33m"); \
+//         printf(x);            \
+//         printf("\033[0m");    \
+//     }
+// #define red(x...)             \
+//     {                         \
+//         printf("\033[1;31m"); \
+//         printf(x);            \
+//         printf("\033[0m");    \
+//     }
+// #define green(x...)           \
+//     {                         \
+//         printf("\033[1;32m"); \
+//         printf(x);            \
+//         printf("\033[0m");    \
+//     }
+// #define blue(x...)            \
+//     {                         \
+//         printf("\033[1;34m"); \
+//         printf(x);            \
+//         printf("\033[0m");    \
+//     }
+#define blue(x...)
+#define yellow(x...)
+#define red(x...)
+#define green(x...)

@@ -4,7 +4,6 @@
 #endif
 
 // TODO: move trie to other file
-// TODO: Deal with function_id and variable_id (S_45)
 #define ALPHABET 27
 trie getTrieNode(void)
 {
@@ -194,9 +193,9 @@ void initialize_states()
     states[INVALID].token = TK_INVALID;
     states[S_1].token = TK_NOTOKEN;
     states[S_2].token = TK_NOTOKEN;
-    states[S_3].token = TK_NOTOKEN;  // TODO: lc++
-    states[S_43].token = TK_NOTOKEN; // TODO: lookup
-    states[S_45].token = TK_NOTOKEN; // TODO: lookup
+    states[S_3].token = TK_NOTOKEN;
+    states[S_43].token = TK_NOTOKEN;
+    states[S_45].token = TK_NOTOKEN;
     states[S_60].token = TK_NOTOKEN;
     states[S_4].token = TK_NOT;
     states[S_5].token = TK_SQL;
@@ -360,12 +359,14 @@ FILE *getStream(FILE *fp)
         printf("Error: Could not create a new file\n");
         exit(1);
     }
+    fprintf(new_fp, "%-30s %-30s %s\n", "Line", "Lexeme", "Token");
+    fprintf(new_fp, "%-30s %-30s %s\n", "----", "------", "-----");
     while (fgets(buffer->primary_buffer, MAX_BUFFER_SIZE, fp) != NULL)
     {
         tokenInfo info = getNextToken(buffer);
         for (int i = 0; i < info->token_count; i++)
         {
-            fprintf(new_fp, "Line: %d,  Lexeme: %s, Token: %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
+            fprintf(new_fp, "%-30d %-30s %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
         }
     }
     fclose(fp);
@@ -384,6 +385,8 @@ tokenInfo getNextToken(twinBuffer buffer)
 
     char *keyword = (char *)malloc(100 * sizeof(char));
 
+    char invalid_token[30];
+
     int till = 0;
 
     int is_filled = buffer->secondary_buffer_index > 0;
@@ -391,24 +394,61 @@ tokenInfo getNextToken(twinBuffer buffer)
     int token_len = 0;
     int token_count = 0;
     int next = 1;
+    int err_type = 0;
 
     while (till < buffer->secondary_buffer_index)
     {
 
         curr_state = get_next_state(curr_state, buffer->secondary_buffer[till]);
-        printf("%d %c he\n", curr_state->state_id, buffer->secondary_buffer[till]);
         token_len++;
+        if (buffer->secondary_buffer[till] == '\n' && curr_state->retract_count == 0)
+        {
+            buffer->line_count++;
+        }
+        if (curr_state->token == S_43 && token_len > 30)
+        {
+            err_type = 3;
+            curr_state = &states[INVALID];
+        }
+        else if (curr_state->token == TK_ID && token_len > 20)
+        {
+            err_type = 4;
+            curr_state = &states[INVALID];
+        }
         if (curr_state->token == TK_INVALID)
         {
             int next = (token_len == 1);
-            buffer->primary_buffer_index -= curr_state->retract_count;
+            till -= curr_state->retract_count;
             token_len -= curr_state->retract_count;
-            memset(keyword, '\0', 30);
-            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+            memset(keyword, '\0', 100);
+            memset(invalid_token, '\0', 30);
+            if (err_type == 3)
+            {
+                strncpy(keyword, "Function Length Error", 22);
+            }
+            else if (err_type == 4)
+            {
+                strncpy(keyword, "Variable Length Error", 22);
+            }
+            else if (next)
+            {
+                strncpy(invalid_token, buffer->secondary_buffer + till - token_len + 1, token_len + next);
+                sprintf(keyword, "Unknown Symbol <%s>", invalid_token);
+            }
+            else
+            {
+                strncpy(invalid_token, buffer->secondary_buffer + till - token_len + 1, token_len + next);
+                if (token_len == 1)
+                {
+                    sprintf(keyword, "Unknown Symbol <%s>", invalid_token);
+                }
+                else
+                {
+                    sprintf(keyword, "Unknown Pattern <%s>", invalid_token);
+                }
+            }
             tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
             tokens->token_count++;
-            buffer->primary_buffer_index++;
-            buffer->primary_buffer_index += next;
             token_len = 0;
             curr_state = &states[START];
             continue;
@@ -417,11 +457,15 @@ tokenInfo getNextToken(twinBuffer buffer)
         token_len -= curr_state->retract_count;
         if (curr_state->token != -1)
         {
-            memset(keyword, '\0', 30);
+            memset(keyword, '\0', 100);
             strncpy(keyword, buffer->secondary_buffer + till - token_len + 1, token_len);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
                 token_id tk = search(look_up_table, keyword);
+                if (tk == TK_INVALID)
+                {
+                    tk = TK_FUNID;
+                }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
                 green("%s\n", keyword);
@@ -437,49 +481,95 @@ tokenInfo getNextToken(twinBuffer buffer)
         till++;
         prev_state = curr_state;
     }
-
-    if (is_filled)
-    {
-        memset(buffer->secondary_buffer, '\0', MAX_BUFFER_SIZE);
-    }
-
     // read from primary buffer
     while (buffer->primary_buffer_index < MAX_BUFFER_SIZE && buffer->primary_buffer[buffer->primary_buffer_index] != '\0')
     {
 
         curr_state = get_next_state(curr_state, buffer->primary_buffer[buffer->primary_buffer_index]);
-        green("%c %d\n", buffer->primary_buffer[buffer->primary_buffer_index], buffer->primary_buffer_index);
+        // green("%c %d\n", buffer->primary_buffer[buffer->primary_buffer_index], buffer->primary_buffer_index);
         token_len++;
         if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n' && curr_state->retract_count == 0)
         {
             buffer->line_count++;
+        }
+        if (curr_state->token == S_43 && token_len > 30)
+        {
+
+            err_type = 3;
+            curr_state = &states[INVALID];
+        }
+        else if (curr_state->token == TK_ID && token_len > 20)
+        {
+            err_type = 4;
+            curr_state = &states[INVALID];
         }
         if (curr_state->token == TK_INVALID)
         {
             int next = (token_len == 1);
             buffer->primary_buffer_index -= curr_state->retract_count;
             token_len -= curr_state->retract_count;
-            memset(keyword, '\0', 30);
-            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+            memset(keyword, '\0', 100);
+            memset(invalid_token, '\0', 30);
+            if (err_type == 3)
+            {
+                strncpy(keyword, "Function Length Error", 22);
+            }
+            else if (err_type == 4)
+            {
+                strncpy(keyword, "Variable Length Error", 22);
+            }
+            else if (next)
+            {
+                strncpy(invalid_token, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+                sprintf(keyword, "Unknown Symbol <%s>", invalid_token);
+            }
+            else
+            {
+                strncpy(invalid_token, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len + next);
+                if (token_len == 1)
+                {
+                    sprintf(keyword, "Unknown Symbol <%s>", invalid_token);
+                }
+                else
+                {
+                    sprintf(keyword, "Unknown Pattern <%s>", invalid_token);
+                }
+            }
             tokens->tokens[tokens->token_count] = getNewToken(curr_state->token, buffer->line_count, keyword);
             tokens->token_count++;
             buffer->primary_buffer_index++;
             buffer->primary_buffer_index += next;
+            err_type = 0;
             token_len = 0;
             curr_state = &states[START];
             continue;
         }
+        // s -> 1 -> 2 -> 3
         buffer->primary_buffer_index -= curr_state->retract_count;
         token_len -= curr_state->retract_count;
         if (curr_state->token != -1)
         {
 
-            memset(keyword, '\0', 30);
-            strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len);
+            memset(keyword, '\0', 100);
+            if (token_len > buffer->primary_buffer_index + 1)
+            {
+                strncpy(keyword, buffer->secondary_buffer, token_len - buffer->primary_buffer_index - 1);
+                strncpy(keyword + token_len - buffer->primary_buffer_index - 1, buffer->primary_buffer, buffer->primary_buffer_index + 1);
+            }
+            else
+            {
+                strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len);
+            }
+            red("%s\n", keyword);
             green("%s %d %d\n", keyword, token_len, buffer->primary_buffer_index);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
+                red("%s\n", keyword);
                 token_id tk = search(look_up_table, keyword);
+                if (tk == TK_INVALID)
+                {
+                    tk = TK_FUNID;
+                }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
                 green("%s\n", keyword);
@@ -493,6 +583,11 @@ tokenInfo getNextToken(twinBuffer buffer)
             token_len = 0;
         }
         buffer->primary_buffer_index++;
+    }
+
+    if (is_filled)
+    {
+        memset(buffer->secondary_buffer, '\0', MAX_BUFFER_SIZE);
     }
 
     if (curr_state == &states[S_0])
@@ -544,8 +639,14 @@ int main()
     initialize_states();
     initialize_transitions();
     initialize_lookup_table();
-    FILE *fp = fopen("test_cases/t1.txt", "r");
-    FILE *new_fp = getStream(fp);
-    fclose(new_fp);
+    for (int i = 1; i < 7; i++)
+    {
+        char *file_name = (char *)malloc(30 * sizeof(char));
+        sprintf(file_name, "test_cases/t%d.txt", i);
+        FILE *fp = fopen(file_name, "r");
+        FILE *new_fp = getStream(fp);
+        fclose(new_fp);
+        printf("Test Case %d Passed\n", i);
+    }
     return 0;
 }
