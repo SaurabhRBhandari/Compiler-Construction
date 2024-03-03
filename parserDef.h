@@ -107,12 +107,8 @@ typedef enum tokens
     TK_NE,
 } tokens;
 
-<<<<<<< HEAD
-typedef struct token{
-=======
 typedef struct token
 {
->>>>>>> 3c88169b9e335dd7581c9a75b037d792f0cd7d23
     int name;
     int is_terminal;
 } token;
