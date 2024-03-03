@@ -6,8 +6,7 @@
 
 struct map
 {
-    char* keys;
+    char *keys;
 }
 
-typedef struct map* map;
-
+typedef struct map *map;
