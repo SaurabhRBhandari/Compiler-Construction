@@ -18,8 +18,10 @@ typedef enum tokens
     stmts,
     typeDefinitions,
     typeDefinition,
+    actualOrRedefined,
     fieldDefinitions,
     fieldDefinition,
+    fieldType,
     moreFields,
     declarations,
     declaration,
@@ -28,14 +30,22 @@ typedef enum tokens
     stmt,
     assignmentStmt,
     singleOrRecId,
+    constructedVariable,
+    oneExpansion,
+    moreExpansions,
     funCallStmt,
     outputParameters,
     inputParameters,
     iterativeStmt,
     conditionalStmt,
+    elsePart,
     ioStmt,
     arithmeticExpression,
     operator,
+    term,
+    factor,
+    lowPrecedenceOperators,
+    highPrecedenceOperators,
     booleanExpression,
     var,
     logicalOp,
@@ -107,12 +117,8 @@ typedef enum tokens
     TK_NE,
 } tokens;
 
-<<<<<<< HEAD
-typedef struct token{
-=======
 typedef struct token
 {
->>>>>>> 3c88169b9e335dd7581c9a75b037d792f0cd7d23
     int name;
     int is_terminal;
 } token;

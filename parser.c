@@ -40,6 +40,10 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
             {
                 int current = queue[front];
                 front++;
+                if(computed[current])
+                {
+                    continue;
+                }
                 variable *v = G.variables[current];
                 bool is_computed = true;
                 while (v != NULL)
@@ -56,7 +60,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                             }
                             else
                             {
-                                if (computed[v->tokens[k]->name] == false)
+                                if (computed[v->tokens[k]->name] == false && current!=v->tokens[k]->name)
                                 {
                                     queue[rear] = v->tokens[k]->name;
                                     rear++;
@@ -603,9 +607,9 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
         v->tokens[i] = (token *)malloc(sizeof(token));
         v->tokens[i]->name = tokens[i];
         v->tokens[i]->is_terminal = 0;
-        for (int i = 0; i < G->no_of_terminals; i++)
+        for (int j = 0; j < G->no_of_terminals; j++)
         {
-            if (G->terminals[i] == tokens[i])
+            if (G->terminals[j] == tokens[i])
             {
                 v->tokens[i]->is_terminal = 1;
                 break;
@@ -619,27 +623,224 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
 int main()
 {
     grammer G;
-    G.no_of_variables = 3;
-    G.no_of_terminals = 4;
+
+    G.no_of_variables = 52;
+    G.no_of_terminals = 59;
     G.no_of_rules = 0;
-    G.start_variable[0] = 'S';
-    G.start_variable[1] = 'A';
-    G.start_variable[2] = 'B';
-    G.terminals[0] = 'a';
-    G.terminals[1] = 'b';
-    G.terminals[2] = 'c';
-    G.terminals[3] = 'd';
+    G.start_variable[0] = program;
+    G.start_variable[1] = mainFunction;
+    G.start_variable[2] = otherFunctions;
+    G.start_variable[3] = function;
+    G.start_variable[4] = input_par;
+    G.start_variable[5] = output_par;
+    G.start_variable[6] = parameter_list;
+    G.start_variable[7] = dataType;
+    G.start_variable[8] = primitiveDatatype;
+    G.start_variable[9] = constructedDatatype;
+    G.start_variable[10] = remaining_list;
+    G.start_variable[11] = stmts;
+    G.start_variable[12] = typeDefinitions;
+    G.start_variable[13] = typeDefinition;
+    G.start_variable[14] = actualOrRedefined;
+    G.start_variable[15] = fieldDefinitions;
+    G.start_variable[16] = fieldDefinition;
+    G.start_variable[17] = fieldType;
+    G.start_variable[18] = moreFields;
+    G.start_variable[19] = declarations;
+    G.start_variable[20] = declaration;
+    G.start_variable[21] = global_or_not;
+    G.start_variable[22] = otherStmts;
+    G.start_variable[23] = stmt;
+    G.start_variable[24] = assignmentStmt;
+    G.start_variable[25] = singleOrRecId;
+    G.start_variable[26] = constructedVariable;
+    G.start_variable[27] = oneExpansion;
+    G.start_variable[28] = moreExpansions;
+    G.start_variable[29] = funCallStmt;
+    G.start_variable[30] = outputParameters;
+    G.start_variable[31] = inputParameters;
+    G.start_variable[32] = iterativeStmt;
+    G.start_variable[33] = conditionalStmt;
+    G.start_variable[34] = elsePart;
+    G.start_variable[35] = ioStmt;
+    G.start_variable[36] = arithmeticExpression;
+    G.start_variable[37] = operator;
+    G.start_variable[38] = term;
+    G.start_variable[39] = factor;
+    G.start_variable[40] = lowPrecedenceOperators;
+    G.start_variable[41] = highPrecedenceOperators;
+    G.start_variable[42] = booleanExpression;
+    G.start_variable[43] = var;
+    G.start_variable[44] = logicalOp;
+    G.start_variable[45] = relationalOp;
+    G.start_variable[46] = returnStmt;
+    G.start_variable[47] = optionalReturn;
+    G.start_variable[48] = idList;
+    G.start_variable[49] = more_ids;
+    G.start_variable[50] = definetypestmt;
+    G.start_variable[51] = A;
+
+    G.terminals[0] = TK_NOTOKEN;
+    G.terminals[1] = TK_INVALID;
+    G.terminals[2] = TK_ASSIGNOP;
+    G.terminals[3] = TK_COMMENT;
+    G.terminals[4] = TK_FIELDID;
+    G.terminals[5] = TK_ID;
+    G.terminals[6] = TK_NUM;
+    G.terminals[7] = TK_RNUM;
+    G.terminals[8] = TK_FUNID;
+    G.terminals[9] = TK_RUID;
+    G.terminals[10] = TK_WITH;
+    G.terminals[11] = TK_PARAMETERS;
+    G.terminals[12] = TK_END;
+    G.terminals[13] = TK_WHILE;
+    G.terminals[14] = TK_UNION;
+    G.terminals[15] = TK_ENDUNION;
+    G.terminals[16] = TK_DEFINETYPE;
+    G.terminals[17] = TK_AS;
+    G.terminals[18] = TK_TYPE;
+    G.terminals[19] = TK_MAIN;
+    G.terminals[20] = TK_GLOBAL;
+    G.terminals[21] = TK_PARAMETER;
+    G.terminals[22] = TK_LIST;
+    G.terminals[23] = TK_SQL;
+    G.terminals[24] = TK_SQR;
+    G.terminals[25] = TK_INPUT;
+    G.terminals[26] = TK_OUTPUT;
+    G.terminals[27] = TK_INT;
+    G.terminals[28] = TK_REAL;
+    G.terminals[29] = TK_COMMA;
+    G.terminals[30] = TK_SEM;
+    G.terminals[31] = TK_COLON;
+    G.terminals[32] = TK_DOT;
+    G.terminals[33] = TK_ENDWHILE;
+    G.terminals[34] = TK_OP;
+    G.terminals[35] = TK_CL;
+    G.terminals[36] = TK_IF;
+    G.terminals[37] = TK_THEN;
+    G.terminals[38] = TK_ENDIF;
+    G.terminals[39] = TK_READ;
+    G.terminals[40] = TK_WRITE;
+    G.terminals[41] = TK_RETURN;
+    G.terminals[42] = TK_PLUS;
+    G.terminals[43] = TK_MINUS;
+    G.terminals[44] = TK_MUL;
+    G.terminals[45] = TK_DIV;
+    G.terminals[46] = TK_CALL;
+    G.terminals[47] = TK_RECORD;
+    G.terminals[48] = TK_ENDRECORD;
+    G.terminals[49] = TK_ELSE;
+    G.terminals[50] = TK_AND;
+    G.terminals[51] = TK_OR;
+    G.terminals[52] = TK_NOT;
+    G.terminals[53] = TK_LT;
+    G.terminals[54] = TK_LE;
+    G.terminals[55] = TK_EQ;
+    G.terminals[56] = TK_GT;
+    G.terminals[57] = TK_GE;
+    G.terminals[58] = TK_NE;
+
     for (int i = 0; i < G.no_of_variables; i++)
     {
         G.variables[i] = NULL;
     }
 
-    grammySays(&G, 'S', 4, (int[]){'a', 'A', 'B', 'b'});
-    grammySays(&G, 'A', 1, (int[]){'c'});
-    grammySays(&G, 'A', 1, (int[]){EPSILON});
-    grammySays(&G, 'B', 1, (int[]){'d'});
-    grammySays(&G, 'B', 1, (int[]){EPSILON});
-    // FirstAndFollow F = ComputeFirstAndFollowSets(G);
+    grammySays(&G, program, 2, (int[]){otherFunctions, mainFunction});
+    grammySays(&G, mainFunction, 3, (int[]){TK_MAIN, stmts, TK_END});
+    grammySays(&G, otherFunctions, 2, (int[]){function, otherFunctions});
+    grammySays(&G, otherFunctions, 1, (int[]){EPSILON});
+    grammySays(&G, function, 6, (int[]){TK_FUNID, input_par, output_par, TK_SEM, stmts, TK_END});
+    grammySays(&G, input_par, 6, (int[]){TK_INPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
+    grammySays(&G, output_par, 6, (int[]){TK_OUTPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
+    grammySays(&G, output_par, 1, (int[]){EPSILON});
+    grammySays(&G, parameter_list, 3, (int[]){dataType, TK_ID, remaining_list});
+    grammySays(&G, dataType, 1, (int[]){primitiveDatatype});
+    grammySays(&G, dataType, 1, (int[]){constructedDatatype});
+    grammySays(&G, primitiveDatatype, 1, (int[]){TK_INT});
+    grammySays(&G, primitiveDatatype, 1, (int[]){TK_REAL});
+    grammySays(&G, constructedDatatype, 2, (int[]){TK_RECORD, TK_RUID});
+    grammySays(&G, constructedDatatype, 2, (int[]){TK_UNION, TK_RUID});
+    grammySays(&G, constructedDatatype, 1, (int[]){TK_RUID});
+    grammySays(&G, remaining_list, 2, (int[]){TK_COMMA, parameter_list});
+    grammySays(&G, remaining_list, 1, (int[]){EPSILON});
+    grammySays(&G, stmts, 4, (int[]){typeDefinitions, declarations, otherStmts, returnStmt});
+    grammySays(&G, typeDefinitions, 2, (int[]){actualOrRedefined, typeDefinitions});
+    grammySays(&G, typeDefinitions, 1, (int[]){EPSILON});
+    grammySays(&G, actualOrRedefined, 1, (int[]){typeDefinition});
+    grammySays(&G, actualOrRedefined, 1, (int[]){definetypestmt});
+    grammySays(&G, typeDefinition, 4, (int[]){TK_RECORD, TK_RUID, fieldDefinitions, TK_ENDRECORD});
+    grammySays(&G, typeDefinition, 4, (int[]){TK_UNION, TK_RUID, fieldDefinitions, TK_ENDUNION});
+    grammySays(&G, fieldDefinitions, 3, (int[]){fieldDefinition, fieldDefinition, moreFields});
+    grammySays(&G, fieldDefinition, 5, (int[]){TK_TYPE, fieldType, TK_COLON, TK_FIELDID, TK_SEM});
+    grammySays(&G, fieldType, 1, (int[]){primitiveDatatype});
+    grammySays(&G, fieldType, 1, (int[]){TK_RUID});
+    grammySays(&G, moreFields, 2, (int[]){fieldDefinition, moreFields});
+    grammySays(&G, moreFields, 1, (int[]){EPSILON});
+    grammySays(&G, declarations, 2, (int[]){declaration, declarations});
+    grammySays(&G, declarations, 1, (int[]){EPSILON});
+    grammySays(&G, declaration, 6, (int[]){TK_TYPE, dataType, TK_COLON, TK_ID, global_or_not, TK_SEM});
+    grammySays(&G, global_or_not, 2, (int[]){TK_COLON, TK_GLOBAL});
+    grammySays(&G, global_or_not, 1, (int[]){EPSILON});
+    grammySays(&G, otherStmts, 2, (int[]){stmt, otherStmts});
+    grammySays(&G, otherStmts, 1, (int[]){EPSILON});
+    grammySays(&G, stmts, 1, (int[]){assignmentStmt});
+    grammySays(&G, stmts, 1, (int[]){iterativeStmt});
+    grammySays(&G, stmts, 1, (int[]){conditionalStmt});
+    grammySays(&G, stmts, 1, (int[]){ioStmt});
+    grammySays(&G, stmts, 1, (int[]){funCallStmt});
+    grammySays(&G, assignmentStmt, 4, (int[]){singleOrRecId, TK_ASSIGNOP, arithmeticExpression, TK_SEM});
+    grammySays(&G, singleOrRecId, 1, (int[]){TK_ID});
+    grammySays(&G, singleOrRecId, 1, (int[]){constructedVariable});
+    grammySays(&G, constructedVariable, 3, (int[]){TK_ID, oneExpansion, moreExpansions});
+    grammySays(&G, oneExpansion, 2, (int[]){TK_DOT, TK_FIELDID});
+    grammySays(&G, moreExpansions, 2, (int[]){oneExpansion, moreExpansions});
+    grammySays(&G, moreExpansions, 1, (int[]){EPSILON});
+    grammySays(&G, funCallStmt, 7, (int[]){outputParameters, TK_CALL, TK_FUNID, TK_WITH, TK_PARAMETERS, inputParameters, TK_SEM});
+    grammySays(&G, outputParameters, 4, (int[]){TK_SQL, idList, TK_SQR, TK_ASSIGNOP});
+    grammySays(&G, outputParameters, 1, (int[]){EPSILON});
+    grammySays(&G, inputParameters, 3, (int[]){TK_SQL, idList, TK_SQR});
+    grammySays(&G, iterativeStmt, 7, (int[]){TK_WHILE, TK_OP, booleanExpression, TK_CL, stmt, otherStmts, TK_ENDWHILE});
+    grammySays(&G, conditionalStmt, 8, (int[]){TK_IF, booleanExpression, TK_THEN, stmt, otherStmts, TK_ELSE, otherStmts, TK_ENDIF});
+    grammySays(&G, conditionalStmt, 8, (int[]){TK_IF, TK_OP, booleanExpression, TK_CL, TK_THEN, stmt, otherStmts, elsePart});
+    grammySays(&G, elsePart, 4, (int[]){TK_ELSE, stmt, otherStmts, TK_ENDIF});
+    grammySays(&G, elsePart, 1, (int[]){TK_ENDIF});
+    grammySays(&G, ioStmt, 5, (int[]){TK_READ, TK_OP, var, TK_CL, TK_SEM});
+    grammySays(&G, ioStmt, 5, (int[]){TK_WRITE, TK_OP, var, TK_CL, TK_SEM});
+    grammySays(&G, arithmeticExpression, 3, (int[]){arithmeticExpression, lowPrecedenceOperators, term});
+    grammySays(&G, arithmeticExpression, 1, (int[]){term});
+    grammySays(&G, term, 3, (int[]){term, highPrecedenceOperators, factor});
+    grammySays(&G, term, 1, (int[]){factor});
+    grammySays(&G, factor, 3, (int[]){TK_OP, arithmeticExpression, TK_CL});
+    grammySays(&G, factor, 1, (int[]){var});
+    grammySays(&G, highPrecedenceOperators, 1, (int[]){TK_MUL});
+    grammySays(&G, highPrecedenceOperators, 1, (int[]){TK_DIV});
+    grammySays(&G, lowPrecedenceOperators, 1, (int[]){TK_PLUS});
+    grammySays(&G, lowPrecedenceOperators, 1, (int[]){TK_MINUS});
+    grammySays(&G, booleanExpression, 7, (int[]){TK_OP, booleanExpression, TK_CL, logicalOp, TK_OP, booleanExpression, TK_CL});
+    grammySays(&G, booleanExpression, 3, (int[]){var, TK_OP, relationalOp, var});
+    grammySays(&G, booleanExpression, 4, (int[]){TK_NOT, TK_OP, booleanExpression, TK_CL});
+    grammySays(&G, var, 1, (int[]){singleOrRecId});
+    grammySays(&G, var, 1, (int[]){TK_NUM});
+    grammySays(&G, var, 1, (int[]){TK_RNUM});
+    grammySays(&G, logicalOp, 1, (int[]){TK_AND});
+    grammySays(&G, logicalOp, 1, (int[]){TK_OR});
+    grammySays(&G, relationalOp, 1, (int[]){TK_LT});
+    grammySays(&G, relationalOp, 1, (int[]){TK_LE});
+    grammySays(&G, relationalOp, 1, (int[]){TK_EQ});
+    grammySays(&G, relationalOp, 1, (int[]){TK_GT});
+    grammySays(&G, relationalOp, 1, (int[]){TK_GE});
+    grammySays(&G, relationalOp, 1, (int[]){TK_NE});
+    grammySays(&G, returnStmt, 3, (int[]){TK_RETURN, optionalReturn, TK_SEM});
+    grammySays(&G, optionalReturn, 3, (int[]){TK_SQL, idList, TK_SQR});
+    grammySays(&G, optionalReturn, 1, (int[]){EPSILON});
+    grammySays(&G, idList, 2, (int[]){TK_ID, more_ids});
+    grammySays(&G, more_ids, 2, (int[]){TK_COMMA, idList});
+    grammySays(&G, more_ids, 1, (int[]){EPSILON});
+    grammySays(&G, definetypestmt, 5, (int[]){TK_DEFINETYPE, A, TK_RUID, TK_AS, TK_RUID});
+    grammySays(&G, A, 1, (int[]){TK_RECORD});
+    grammySays(&G, A, 1, (int[]){TK_UNION});
+
+    FirstAndFollow F = ComputeFirstAndFollowSets(G);
     // Print First and Follow Sets
     // for (int i = 0; i < F.no_of_variables; i++)
     // {
