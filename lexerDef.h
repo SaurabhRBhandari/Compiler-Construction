@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
 #define MAX_BUFFER_SIZE 50
 #define MAX_STATES 64
 
@@ -190,10 +189,21 @@ void initialize_transitions();
 void initialize_lookup_table();
 void theta(state_id curr_state, state_id next_state);
 
-FILE *getStream(FILE *fp);
 tokenInfo getNextToken(twinBuffer buffer);
 state get_next_state(state current_state, char next_char);
+// TODO: seperate file
+typedef struct Vector
+{
+    token *data;
+    int size;
+    int capacity;
+} Vector;
+typedef Vector *vector;
+vector init_vector();
+void push_back(vector v, token data);
+token get(vector v, int index);
 
+vector getStream(FILE *fp);
 // TODO: Move to a separate file
 #define ALPHABET 27
 typedef struct Trie
@@ -211,31 +221,27 @@ token_id search(trie root, const char *key);
 
 trie look_up_table;
 
-// #define yellow(x...)          \
-//     {                         \
-//         printf("\033[1;33m"); \
-//         printf(x);            \
-//         printf("\033[0m");    \
-//     }
-// #define red(x...)             \
-//     {                         \
-//         printf("\033[1;31m"); \
-//         printf(x);            \
-//         printf("\033[0m");    \
-//     }
-// #define green(x...)           \
-//     {                         \
-//         printf("\033[1;32m"); \
-//         printf(x);            \
-//         printf("\033[0m");    \
-//     }
-// #define blue(x...)            \
-//     {                         \
-//         printf("\033[1;34m"); \
-//         printf(x);            \
-//         printf("\033[0m");    \
-//     }
-#define blue(x...)
-#define yellow(x...)
-#define red(x...)
-#define green(x...)
+#define yellow(x...)          \
+    {                         \
+        printf("\033[1;33m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define red(x...)             \
+    {                         \
+        printf("\033[1;31m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define green(x...)           \
+    {                         \
+        printf("\033[1;32m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }
+#define blue(x...)            \
+    {                         \
+        printf("\033[1;34m"); \
+        printf(x);            \
+        printf("\033[0m");    \
+    }

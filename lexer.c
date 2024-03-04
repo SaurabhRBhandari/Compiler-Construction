@@ -3,6 +3,34 @@
 #define LEXERDEF_H
 #endif
 
+// TODO: move to other file
+
+// create a new vector
+vector init_vector()
+{
+    vector v = (vector)malloc(sizeof(Vector));
+    v->data = (token *)malloc(sizeof(Token) * 10);
+    v->size = 0;
+    v->capacity = 10;
+    return v;
+}
+
+// push a new element to the vector
+void push_back(vector v, token data)
+{
+    if (v->size == v->capacity)
+    {
+        v->capacity *= 2;
+        v->data = (token *)realloc(v->data, sizeof(Token) * v->capacity);
+    }
+    v->data[v->size++] = data;
+}
+
+token get(vector v, int i)
+{
+    return v->data[i];
+}
+
 // TODO: move trie to other file
 #define ALPHABET 27
 trie getTrieNode(void)
@@ -331,19 +359,16 @@ void print_graph()
     FILE *fp = fopen("graph.txt", "w");
     for (int i = 0; i < MAX_STATES; i++)
     {
-        // blue("%d : ", i);
         fprintf(fp, "%d : ", i);
         for (int j = 0; j < states[i].length; j++)
         {
-            // blue("\t[%c -> %d] ", states[i].transitions[j]->next_char, states[i].transitions[j]->next_state->state_id);
             fprintf(fp, "\t[%c -> %d] ", states[i].transitions[j]->next_char, states[i].transitions[j]->next_state->state_id);
         }
-        // blue("\n\n\n");
         fprintf(fp, "\n\n\n");
     }
 }
 
-FILE *getStream(FILE *fp)
+vector getStream(FILE *fp)
 {
     if (fp == NULL)
     {
@@ -361,16 +386,25 @@ FILE *getStream(FILE *fp)
     }
     fprintf(new_fp, "%-30s %-30s %s\n", "Line", "Lexeme", "Token");
     fprintf(new_fp, "%-30s %-30s %s\n", "----", "------", "-----");
+    red("%-30s", "Line");
+    red("%-30s", "Lexeme");
+    red("%s\n", "Token");
+    vector v = init_vector();
     while (fgets(buffer->primary_buffer, MAX_BUFFER_SIZE, fp) != NULL)
     {
         tokenInfo info = getNextToken(buffer);
         for (int i = 0; i < info->token_count; i++)
         {
+            push_back(v, info->tokens[i]);
             fprintf(new_fp, "%-30d %-30s %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
+            green("%-30d", info->tokens[i]->lc);
+            blue("%-30s", info->tokens[i]->lexeme);
+            yellow("%s\n", TOKENS[info->tokens[i]->tk]);
         }
     }
     fclose(fp);
-    return new_fp;
+    fclose(new_fp);
+    return v;
 }
 
 tokenInfo getNextToken(twinBuffer buffer)
@@ -468,7 +502,6 @@ tokenInfo getNextToken(twinBuffer buffer)
                 }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
-                green("%s\n", keyword);
             }
             if (curr_state->token != TK_NOTOKEN)
             {
@@ -486,7 +519,6 @@ tokenInfo getNextToken(twinBuffer buffer)
     {
 
         curr_state = get_next_state(curr_state, buffer->primary_buffer[buffer->primary_buffer_index]);
-        // green("%c %d\n", buffer->primary_buffer[buffer->primary_buffer_index], buffer->primary_buffer_index);
         token_len++;
         if (buffer->primary_buffer[buffer->primary_buffer_index] == '\n' && curr_state->retract_count == 0)
         {
@@ -560,11 +592,8 @@ tokenInfo getNextToken(twinBuffer buffer)
             {
                 strncpy(keyword, buffer->primary_buffer + buffer->primary_buffer_index - token_len + 1, token_len);
             }
-            red("%s\n", keyword);
-            green("%s %d %d\n", keyword, token_len, buffer->primary_buffer_index);
             if (curr_state->state_id == S_43 || curr_state->state_id == S_45)
             {
-                red("%s\n", keyword);
                 token_id tk = search(look_up_table, keyword);
                 if (tk == TK_INVALID)
                 {
@@ -572,7 +601,6 @@ tokenInfo getNextToken(twinBuffer buffer)
                 }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
-                green("%s\n", keyword);
             }
             if (curr_state->token != TK_NOTOKEN)
             {
@@ -626,27 +654,36 @@ state get_next_state(state current_state, char next_char)
     {
         if (current_state->transitions[i]->next_char == next_char)
         {
-            blue("1. %d %c \n", current_state->token, next_char);
             return current_state->transitions[i]->next_state;
         }
     }
-    blue("2. %d %c \n", current_state->token, next_char);
     return &states[INVALID];
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     initialize_states();
     initialize_transitions();
     initialize_lookup_table();
-    for (int i = 1; i < 7; i++)
+    if (argc < 2)
     {
-        char *file_name = (char *)malloc(30 * sizeof(char));
-        sprintf(file_name, "test_cases/t%d.txt", i);
-        FILE *fp = fopen(file_name, "r");
-        FILE *new_fp = getStream(fp);
-        fclose(new_fp);
-        printf("Test Case %d Passed\n", i);
+        printf("Error: No input file provided\n");
+        exit(1);
     }
+    FILE *fp = fopen(argv[1], "r");
+    vector v = getStream(fp);
+    for (int i = 0; i < v->size; i++)
+    {
+        printf("%s\n", TOKENS[get(v, i)->tk]);
+    }
+    // for (int i = 1; i < 7; i++)
+    // {
+    //     char *file_name = (char *)malloc(30 * sizeof(char));
+    //     sprintf(file_name, "test_cases/t%d.txt", i);
+    //     FILE *fp = fopen(file_name, "r");
+    //     FILE *new_fp = getStream(fp);
+    //     fclose(new_fp);
+    //     printf("Test Case %d Passed\n", i);
+    // }
     return 0;
 }
