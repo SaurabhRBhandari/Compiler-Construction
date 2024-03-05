@@ -69,6 +69,12 @@ int main()
             white("Removing comments\n");
             removeComments(file_name, output_file_name);
             green("Comments removed successfully\n");
+            // open the output file in read mode and print the content
+            FILE *fc = fopen(output_file_name, "r");
+            char c;
+            while ((c = fgetc(fc)) != EOF)
+                printf("%c", c);
+            printf("\n");
             break;
         case 2:
             // Print the lexical tokens list
