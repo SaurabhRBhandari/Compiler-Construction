@@ -1,3 +1,12 @@
+/*
+Group Number - 10
+ID:	2021A7PS1463P			Name: Dhyey Italiya
+ID:	2021A7PS2434P			Name: LAKSHIT SETHI
+ID:	2021A7PS0523P			Name: Abir Abhyankar 
+ID:	2021A7PS2414P			Name: Saksham Verma
+ID:	2021A7PS2412P			Name: Saurabh Bhandari
+*/
+
 #include "lexerDef.h"
 #include "parserDef.h"
 #define INT_MAX 21435
@@ -54,10 +63,10 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                     {
                         int k = 0;
                         bool is_TK_EPSILON = true;
-                        //Iterate through all the ptokens of the rule
+                        // Iterate through all the ptokens of the rule
                         while (k < v->no_of_tokens && is_TK_EPSILON == true)
                         {
-                            if (v->ptokens[k]->is_terminal == 1) 
+                            if (v->ptokens[k]->is_terminal == 1)
                             {
                                 break;
                             }
@@ -89,7 +98,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                     }
                     v = v->next;
                 }
-                // If first set can be computed 
+                // If first set can be computed
                 if (is_computed == true)
                 {
                     variable *v = G.variables[current];
@@ -100,7 +109,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                         {
                             int k = 0;
                             bool is_TK_EPSILON = true;
-                            //Iterate through all the ptokens of the rule
+                            // Iterate through all the ptokens of the rule
                             while (k < v->no_of_tokens && is_TK_EPSILON == true)
                             {
                                 if (v->ptokens[k]->is_terminal == 1)
@@ -587,7 +596,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
         }
         int flag = 1;
         // Check if the token is valid
-        if (get(input, i)->tk == TK_INVALID || c==-2)
+        if (get(input, i)->tk == TK_INVALID || c == -2)
         {
             red("Line %d Error: %s\n", get(input, i)->lc, get(input, i)->lexeme);
             i++;
@@ -599,7 +608,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
         if (r == -2)
         {
             if (erroc)
-                red("Line %d Error: The token %s for lexeme %s does not math with the expected token %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+                red("Line %d Error: The token %s for lexeme %s does not math with the expected token %s\n", get(input, i)->lc, TOKENS[get(input, i)->tk], get(input, i)->lexeme, TOKENS[stack[top]]);
             top--;
             treetop--;
             erroc = 0;
@@ -610,7 +619,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
         if (T.table[r][c] == INT_MIN)
         {
             if (erroc)
-                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n", get(input, i)->lc, TOKENS[get(input, i)->tk], get(input, i)->lexeme, TOKENS[stack[top]]);
             i++;
             erroc = 0;
             err = 1;
@@ -620,7 +629,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
         if (T.table[r][c] == INT_MAX)
         {
             if (erroc)
-                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n", get(input, i)->lc, TOKENS[get(input, i)->tk], get(input, i)->lexeme, TOKENS[stack[top]]);
             top--;
             treetop--;
             erroc = 0;
@@ -636,7 +645,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
                 // Retrieve the rule from the parse table
                 if (v->rule_no == T.table[r][c])
                 {
-                    //Replace the variable with the rule in the stack
+                    // Replace the variable with the rule in the stack
                     top--;
                     parseTree *temp = ptree[treetop];
                     treetop--;
@@ -676,7 +685,7 @@ parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector in
     // Check if the stack is empty and the input is valid
     if (stack[top] == TK_DOLLAR && err == 0)
     {
-        green("Input is valid\n");
+        green("COMPILATION SUCCESSFUL \n");
     }
     else
     {

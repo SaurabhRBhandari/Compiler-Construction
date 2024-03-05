@@ -1,3 +1,11 @@
+/*
+Group Number - 10
+ID:	2021A7PS1463P			Name: Dhyey Italiya
+ID:	2021A7PS2434P			Name: LAKSHIT SETHI
+ID:	2021A7PS0523P			Name: Abir Abhyankar 
+ID:	2021A7PS2414P			Name: Saksham Verma
+ID:	2021A7PS2412P			Name: Saurabh Bhandari
+*/
 #include "lexerDef.h"
 #include "parserDef.h"
 #include "utils.h"
@@ -44,7 +52,9 @@ int main()
             yellow("Enter the input file name: ");
             char file_name[100];
             scanf("%s", file_name);
-            append_endline(file_name);
+            bool flag = append_endline(file_name);
+            if (!flag)
+                break;
             yellow("Enter the output file name:") char output_file_name[100];
             scanf("%s", output_file_name);
             removeComments(file_name, output_file_name);
@@ -55,7 +65,9 @@ int main()
             yellow("Enter the input file name: ");
             char file_name2[100];
             scanf("%s", file_name2);
-            append_endline(file_name2);
+            bool flag2 = append_endline(file_name2);
+            if (!flag2)
+                break;
             FILE *fp = fopen(file_name2, "r");
             vector v = getStream(fp);
             fclose(fp);
@@ -74,7 +86,9 @@ int main()
             yellow("Enter the input file name: ");
             char file_name3[100];
             scanf("%s", file_name3);
-            append_endline(file_name3);
+            bool flag4 = append_endline(file_name3);
+            if (!flag4)
+                break;
             FILE *fp3 = fopen(file_name3, "r");
             yellow("Enter the output file name: ");
             char output_file_name3[100];
@@ -105,7 +119,9 @@ int main()
             char file_name4[100];
             scanf("%s", file_name4);
             FILE *fp4 = fopen(file_name4, "r");
-            append_endline(file_name4);
+            bool flag5 = append_endline(file_name4);
+            if (!flag5)
+                break;
             clock_t start_time, end_time;
             double total_CPU_time, total_CPU_time_in_seconds;
             start_time = clock();

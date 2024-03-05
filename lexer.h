@@ -1,3 +1,12 @@
+/*
+Group Number - 10
+ID:	2021A7PS1463P			Name: Dhyey Italiya
+ID:	2021A7PS2434P			Name: LAKSHIT SETHI
+ID:	2021A7PS0523P			Name: Abir Abhyankar 
+ID:	2021A7PS2414P			Name: Saksham Verma
+ID:	2021A7PS2412P			Name: Saurabh Bhandari
+*/
+
 #ifndef LEXER_H
 #define LEXER_H
 #include "utils.h"
@@ -19,7 +28,7 @@ tokenInfo getNextToken(twinBuffer buffer); // Get the next token from the buffer
 void removeComments(char *testcaseFile, char *cleanFile);
 
 #ifndef VECTOR_INCOMPLETE
-#include "data_structures/vector.h"
+#include "vector.h"
 vector getStream(FILE *fp);
 #endif
 #endif

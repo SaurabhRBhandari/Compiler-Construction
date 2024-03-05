@@ -1,3 +1,11 @@
+# Group Number - 10
+# ID:	2021A7PS1463P			Name: Dhyey Italiya
+# ID:	2021A7PS2434P			Name: LAKSHIT SETHI
+# ID:	2021A7PS0523P			Name: Abir Abhyankar 
+# ID:	2021A7PS2414P			Name: Saksham Verma
+# ID:	2021A7PS2412P			Name: Saurabh Bhandari
+
+
 # Purpose: Makefile for the project
 
 # Lexical Analyzer
@@ -17,12 +25,12 @@ utils.o: utils.c utils.h
 		@gcc -c utils.c
 
 # Trie data structure
-trie.o: data_structures/trie.c data_structures/trie.h
-		@gcc -c data_structures/trie.c
+trie.o: trie.c trie.h
+		@gcc -c trie.c
 
 # Vector data structure
-vector.o: data_structures/vector.c data_structures/vector.h
-		@gcc -c data_structures/vector.c
+vector.o: vector.c vector.h
+		@gcc -c vector.c
 
 # Compile all the .o files
 compile: driver.o lexer.o parser.o utils.o trie.o vector.o
@@ -36,7 +44,7 @@ run: exec
 # Clean the .o files and the executable
 clean:
 		@rm -f *.o exec
-		@rm -f data_structures/*.o 
+		@rm -f *.o 
 
 # Compile, run and clean
 all: compile run clean

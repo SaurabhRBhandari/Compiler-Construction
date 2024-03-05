@@ -1,3 +1,12 @@
+/*
+Group Number - 10
+ID:	2021A7PS1463P			Name: Dhyey Italiya
+ID:	2021A7PS2434P			Name: LAKSHIT SETHI
+ID:	2021A7PS0523P			Name: Abir Abhyankar 
+ID:	2021A7PS2414P			Name: Saksham Verma
+ID:	2021A7PS2412P			Name: Saurabh Bhandari
+*/
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -6,8 +15,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "data_structures/vector.h"
-#include "data_structures/trie.h"
+#include "vector.h"
+#include "trie.h"
 
 void theta(state_id curr_state, state_id next_state); // Add remaining transitions to the graph
 transition f(char ch, state_id next_state);           // create a transition
@@ -18,7 +27,8 @@ transition *bToD(state_id next_state);                // create a transition for
 transition *zeroToNine(state_id next_state);          // create a transition for 0 to 9
 transition *twoToSeven(state_id next_state);          // create a transition for 2 to 7
 
-void append_endline(char *str);
+// Adds a newline character at the end of the string and returns true if successful, false otherwise
+bool append_endline(char *str);
 
 // Adding colors to the output
 
