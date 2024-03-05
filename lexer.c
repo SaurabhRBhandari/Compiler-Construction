@@ -2,7 +2,7 @@
 Group Number - 10
 ID:	2021A7PS1463P			Name: Dhyey Italiya
 ID:	2021A7PS2434P			Name: LAKSHIT SETHI
-ID:	2021A7PS0523P			Name: Abir Abhyankar 
+ID:	2021A7PS0523P			Name: Abir Abhyankar
 ID:	2021A7PS2414P			Name: Saksham Verma
 ID:	2021A7PS2412P			Name: Saurabh Bhandari
 */
@@ -217,7 +217,7 @@ vector getStream(FILE *fp)
     return v;
 }
 
-// Returns the list of next tokens from the twin-buffer 
+// Returns the list of next tokens from the twin-buffer
 tokenInfo getNextToken(twinBuffer buffer)
 {
     state curr_state = &states[START];
@@ -487,8 +487,7 @@ state get_next_state(state current_state, char next_char)
     return &states[INVALID];
 }
 
-
-// Removes the comments from the test-case file and puts remaining input 
+// Removes the comments from the test-case file and puts remaining input
 // into a clean file
 void removeComments(char *testcaseFile, char *cleanFile)
 {
