@@ -45,7 +45,7 @@ int main()
         {
         case 0:
             // Exit the program
-            yellow("Thank you for using SALAD compiler.\n");
+            cyan("Thank you for using SALAD compiler.\n");
             return 0;
         case 1:
             // Remove comments from the input file
