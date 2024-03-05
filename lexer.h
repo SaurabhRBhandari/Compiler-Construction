@@ -11,6 +11,15 @@ ID:	2021A7PS2412P			Name: Saurabh Bhandari
 #define LEXER_H
 #include "utils.h"
 
+void theta(state_id curr_state, state_id next_state); // Add remaining transitions to the graph
+transition f(char ch, state_id next_state);           // create a transition
+transition *aToZExceptBToD(state_id next_state);      // create a transition for a to z except b to d
+transition *aToZ(state_id next_state);                // create a transition for a to z
+transition *AToZ(state_id next_state);                // create a transition for A to Z
+transition *bToD(state_id next_state);                // create a transition for b to d
+transition *zeroToNine(state_id next_state);          // create a transition for 0 to 9
+transition *twoToSeven(state_id next_state);          // create a transition for 2 to 7
+
 void add_state(state_id state_num, transition *transitions, int transition_count); // Add a state to the graph
 
 void initialize_states(); // Initialize the states of the graph

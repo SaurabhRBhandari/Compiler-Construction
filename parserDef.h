@@ -11,7 +11,7 @@ ID:	2021A7PS2412P			Name: Saurabh Bhandari
 #define PARSERDEF_H
 #include <stdbool.h>
 #include "lexerDef.h"
-#include "util.h"
+#include "utils.h"
 
 #define MAX_TOKENS 100
 

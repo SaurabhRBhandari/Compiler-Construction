@@ -70,7 +70,6 @@ int main()
                 break;
             FILE *fp = fopen(file_name2, "r");
             vector v = getStream(fp);
-            fclose(fp);
             red("%-30s", "Line");
             red("%-30s", "Lexeme");
             red("%s\n", "Token");
@@ -95,7 +94,6 @@ int main()
             scanf("%s", output_file_name3);
             FILE *f = fopen(output_file_name3, "w");
             vector v3 = getStream(fp3);
-            fclose(fp3);
             parseTree *tree = parseInputSourceCode(T, F, &G, v3);
             fprintf(f, "%-30s", "Lexeme");
             fprintf(f, "%-30s", "Line Number");
@@ -126,7 +124,6 @@ int main()
             double total_CPU_time, total_CPU_time_in_seconds;
             start_time = clock();
             vector v4 = getStream(fp4);
-            fclose(fp4);
             parseInputSourceCode(T, F, &G, v4);
             end_time = clock();
             total_CPU_time = (double)(end_time - start_time);
@@ -136,7 +133,7 @@ int main()
             break;
         default:
             // Invalid choice
-            yellow("Invalid choice\n");
+            red("Invalid Choice\n");
             break;
         }
     }

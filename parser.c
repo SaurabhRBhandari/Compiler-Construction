@@ -703,7 +703,7 @@ void printParseTree(parseTree *ptree, FILE *fp)
         return;
     }
     // If the node is not a leaf node then print the first child
-    if (ptree->children[0] != NULL)
+    if (ptree->no_of_children!=0 && ptree->children[0] != NULL)
     {
         printParseTree(ptree->children[0], fp);
     }
@@ -764,7 +764,10 @@ void printParseTree(parseTree *ptree, FILE *fp)
     // If the node is not a leaf node then print the rest of the children
     for (int i = 1; i < ptree->no_of_children; i++)
     {
-        printParseTree(ptree->children[i], fp);
+        if(ptree->children[i]!=NULL)
+        {
+            printParseTree(ptree->children[i], fp);
+        }
     }
 }
 

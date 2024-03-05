@@ -250,12 +250,12 @@ typedef struct TokenInfo *tokenInfo;   // Pointer to a token info
 typedef struct Token *token;           // Pointer to a token
 
 // Array of states for the graph
-State states[MAX_STATES];
 
-#ifndef TRIE_INCOMPLETE
-#include "trie.h"
-trie look_up_table;
-#endif
+
+// #ifndef TRIE_INCOMPLETE
+// #include "trie.h"
+
+// #endif
 
 #include "lexer.h"
 #endif

@@ -9,7 +9,9 @@ ID:	2021A7PS2412P			Name: Saurabh Bhandari
 
 #ifndef PARSER_H
 #define PARSER_H
+#ifndef UTILS_H
 #include "utils.h"
+#endif
 #include "lexerDef.h"
 #include "parserDef.h"
 
