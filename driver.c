@@ -15,21 +15,30 @@ ID:	2021A7PS2412P			Name: Saurabh Bhandari
 
 int main()
 {
+
     // Initialize the states, transitions and lookup table
+    white("Initializing the states, transitions and lookup table\n");
     initialize_states();
     initialize_transitions();
     initialize_lookup_table();
+    green("Initialization done\n");
 
     // Initialize the grammer
+    white("Initializing the grammer\n");
     grammer G;
     grammer_init(&G);
+    green("Initialization done\n");
 
     // Compute first and follow sets
+    white("Computing first and follow sets\n");
     FirstAndFollow F = ComputeFirstAndFollowSets(G);
+    green("First and follow sets computed\n");
 
     // Create the parse table
+    white("Creating the parse table\n");
     table T;
     createParseTable(F, &T);
+    green("Parse table created\n");
 
     int choice;
     while (1)
@@ -57,8 +66,9 @@ int main()
                 break;
             yellow("Enter the output file name:") char output_file_name[100];
             scanf("%s", output_file_name);
+            white("Removing comments\n");
             removeComments(file_name, output_file_name);
-            yellow("Comments removed successfully\n");
+            green("Comments removed successfully\n");
             break;
         case 2:
             // Print the lexical tokens list
@@ -69,7 +79,9 @@ int main()
             if (!flag2)
                 break;
             FILE *fp = fopen(file_name2, "r");
+            white("Calculating the lexical tokens list\n");
             vector v = getStream(fp);
+            green("Lexical tokens list calculated\n");
             red("%-30s", "Line");
             red("%-30s", "Lexeme");
             red("%s\n", "Token");
@@ -93,8 +105,12 @@ int main()
             char output_file_name3[100];
             scanf("%s", output_file_name3);
             FILE *f = fopen(output_file_name3, "w");
+            white("Calculating the lexical tokens list\n");
             vector v3 = getStream(fp3);
-            parseTree *tree = parseInputSourceCode(T, F, &G, v3);
+            green("Lexical tokens list calculated\n");
+
+            white("Parsing the source code\n")
+                parseTree *tree = parseInputSourceCode(T, F, &G, v3);
             fprintf(f, "%-30s", "Lexeme");
             fprintf(f, "%-30s", "Line Number");
             fprintf(f, "%-30s", "Token Name");
@@ -110,6 +126,7 @@ int main()
             fprintf(f, "%-30s", "--------");
             fprintf(f, "%s\n", "-----------");
             printParseTree(tree, f);
+            green("Parse tree printed in the file\n");
             break;
         case 4:
             // Parse the source code and print the total time taken
@@ -123,8 +140,12 @@ int main()
             clock_t start_time, end_time;
             double total_CPU_time, total_CPU_time_in_seconds;
             start_time = clock();
+            white("Calculating the lexical tokens list\n");
             vector v4 = getStream(fp4);
+            green("Lexical tokens list calculated\n");
+            white("Parsing the source code\n");
             parseInputSourceCode(T, F, &G, v4);
+            green("Parse tree calculated\n");
             end_time = clock();
             total_CPU_time = (double)(end_time - start_time);
             total_CPU_time_in_seconds = total_CPU_time / CLOCKS_PER_SEC;
