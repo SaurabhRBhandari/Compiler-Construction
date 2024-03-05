@@ -1,27 +1,28 @@
+#include "lexerDef.h"
 #include "parserDef.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #define INT_MAX 21435
 #define INT_MIN -21435
+
 FirstAndFollow ComputeFirstAndFollowSets(grammer G)
 {
     FirstAndFollow F;
     F.no_of_terminals = G.no_of_terminals;
     F.no_of_variables = G.no_of_variables;
+    // Initialize the first and follow sets
     for (int i = 0; i < G.no_of_variables; i++)
     {
         F.start_variable[i] = G.start_variable[i];
         F.elements[i].no_of_first = 0;
         F.elements[i].no_of_follow = 0;
     }
+    // Copy the terminals
     for (int i = 0; i < G.no_of_terminals; i++)
     {
         F.terminals[i] = G.terminals[i];
     }
 
     // Compute First Sets
-    bool computed[G.no_of_variables];
+    bool computed[G.no_of_variables]; // to check if the first set of a variable is computed
     for (int i = 0; i < G.no_of_variables; i++)
     {
         computed[i] = false;
@@ -30,11 +31,13 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
     {
         if (computed[i] == false)
         {
+            // Define a stack to store variables to be computed
             int queue[G.no_of_variables];
             int front = 0;
             int rear = 0;
             queue[rear] = i;
             rear++;
+            // Check if all non terminals needed are computed
             while (front < rear)
             {
                 int current = queue[front];
@@ -51,26 +54,29 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                     {
                         int k = 0;
                         bool is_TK_EPSILON = true;
+                        //Iterate through all the ptokens of the rule
                         while (k < v->no_of_tokens && is_TK_EPSILON == true)
                         {
-                            if (v->tokens[k]->is_terminal == 1)
+                            if (v->ptokens[k]->is_terminal == 1) 
                             {
                                 break;
                             }
                             else
                             {
-                                if (computed[v->tokens[k]->name] == false && current != v->tokens[k]->name)
+                                // If the token is a variable
+                                if (computed[v->ptokens[k]->name] == false && current != v->ptokens[k]->name)
                                 {
-                                    queue[rear] = v->tokens[k]->name;
+                                    queue[rear] = v->ptokens[k]->name;
                                     rear++;
                                     is_computed = false;
                                 }
                                 else
                                 {
                                     is_TK_EPSILON = false;
-                                    for (int l = 0; l < F.elements[v->tokens[k]->name].no_of_first; l++)
+                                    // Check if TK_EPSILON is present in the first set of the variable
+                                    for (int l = 0; l < F.elements[v->ptokens[k]->name].no_of_first; l++)
                                     {
-                                        if (F.elements[v->tokens[k]->name].first[l] == TK_EPSILON)
+                                        if (F.elements[v->ptokens[k]->name].first[l] == TK_EPSILON)
                                         {
                                             is_TK_EPSILON = true;
                                             break;
@@ -83,31 +89,35 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                     }
                     v = v->next;
                 }
+                // If first set can be computed 
                 if (is_computed == true)
                 {
                     variable *v = G.variables[current];
                     while (v != NULL)
                     {
+                        // Iterate through all the rules of the variable
                         if (v->no_of_tokens > 0)
                         {
                             int k = 0;
                             bool is_TK_EPSILON = true;
+                            //Iterate through all the ptokens of the rule
                             while (k < v->no_of_tokens && is_TK_EPSILON == true)
                             {
-                                if (v->tokens[k]->is_terminal == 1)
+                                if (v->ptokens[k]->is_terminal == 1)
                                 {
                                     bool is_present = false;
                                     for (int l = 0; l < F.elements[current].no_of_first; l++)
                                     {
-                                        if (F.elements[current].first[l] == v->tokens[k]->name)
+                                        if (F.elements[current].first[l] == v->ptokens[k]->name)
                                         {
                                             is_present = true;
                                             break;
                                         }
                                     }
+                                    // If the terminal is not present in the first set of the variable then add it to the first set
                                     if (is_present == false)
                                     {
-                                        F.elements[current].first[F.elements[current].no_of_first] = v->tokens[k]->name;
+                                        F.elements[current].first[F.elements[current].no_of_first] = v->ptokens[k]->name;
                                         F.elements[current].first_rule[F.elements[current].no_of_first] = v->rule_no;
                                         F.elements[current].no_of_first++;
                                     }
@@ -116,32 +126,36 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                 else
                                 {
                                     is_TK_EPSILON = false;
-                                    for (int l = 0; l < F.elements[v->tokens[k]->name].no_of_first; l++)
+                                    for (int l = 0; l < F.elements[v->ptokens[k]->name].no_of_first; l++)
                                     {
-                                        if (F.elements[v->tokens[k]->name].first[l] == TK_EPSILON)
+                                        // Check if TK_EPSILON is present in the first set of the variable
+                                        if (F.elements[v->ptokens[k]->name].first[l] == TK_EPSILON)
                                         {
                                             is_TK_EPSILON = true;
                                             continue;
                                         }
                                         bool is_present = false;
+                                        // Check if the terminal is already present in the first set of the variable
                                         for (int r = 0; r < F.elements[current].no_of_first; r++)
                                         {
-                                            if (F.elements[current].first[r] == F.elements[v->tokens[k]->name].first[l])
+                                            if (F.elements[current].first[r] == F.elements[v->ptokens[k]->name].first[l])
                                             {
                                                 is_present = true;
                                                 break;
                                             }
                                         }
+                                        // If the terminal is not present in the first set of the variable then add it to the first set
                                         if (is_present == false)
                                         {
-                                            F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first[l];
-                                            F.elements[current].first_rule[F.elements[current].no_of_first] = F.elements[v->tokens[k]->name].first_rule[l];
+                                            F.elements[current].first[F.elements[current].no_of_first] = F.elements[v->ptokens[k]->name].first[l];
+                                            F.elements[current].first_rule[F.elements[current].no_of_first] = v->rule_no;
                                             F.elements[current].no_of_first++;
                                         }
                                     }
                                 }
                                 k++;
                             }
+                            // If TK_EPSILON is present in the first set of the variable then add it to the first set
                             if (is_TK_EPSILON == true)
                             {
                                 bool is_present = false;
@@ -161,20 +175,23 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                 }
                             }
                         }
+                        // Go to the next rule
                         v = v->next;
                     }
+                    // Mark the variable as computed
                     computed[current] = true;
                 }
             }
         }
         else
         {
+            // If first set is already computed
             i++;
         }
     }
 
     // compute follow sets
-    // Assumption 0 is the start variable and therefore adding $ in its follow set represeneted by TK_DOLLAR
+    // Assumption 0 is the start variable and therefore adding $ in its follow set represented by TK_DOLLAR
     F.elements[0].follow[F.elements[0].no_of_follow] = TK_DOLLAR;
     F.elements[0].follow_rule[F.elements[0].no_of_follow] = 0;
     F.elements[0].no_of_follow++;
@@ -189,14 +206,14 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
             {
                 for (int k = 0; k < v->no_of_tokens; k++)
                 {
-                    // iterate through all the tokens of the rule
-                    if (v->tokens[k]->is_terminal == 0)
+                    // iterate through all the ptokens of the rule
+                    if (v->ptokens[k]->is_terminal == 0)
                     {
                         // if the token is a variable
                         int c = -2;
                         for (int i = 0; i < F.no_of_terminals; i++)
                         {
-                            if (F.start_variable[i] == v->tokens[k]->name)
+                            if (F.start_variable[i] == v->ptokens[k]->name)
                             {
                                 c = i;
                                 break;
@@ -205,14 +222,14 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                         if (k < v->no_of_tokens - 1)
                         {
                             // if the token is not the last token of the rule
-                            if (v->tokens[k + 1]->is_terminal == 1)
+                            if (v->ptokens[k + 1]->is_terminal == 1)
                             {
                                 // if the next token is a terminal
                                 // check if the terminal is already present in the follow set of the current token
                                 bool is_present = false;
                                 for (int l = 0; l < F.elements[c].no_of_follow; l++)
                                 {
-                                    if (F.elements[c].follow[l] == v->tokens[k + 1]->name)
+                                    if (F.elements[c].follow[l] == v->ptokens[k + 1]->name)
                                     {
                                         is_present = true;
                                         break;
@@ -221,7 +238,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                 // if the terminal is not present in the follow set of the current token then add it to the follow set
                                 if (is_present == false)
                                 {
-                                    F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[k + 1]->name;
+                                    F.elements[c].follow[F.elements[c].no_of_follow] = v->ptokens[k + 1]->name;
                                     F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
                                     F.elements[c].no_of_follow++;
                                 }
@@ -233,8 +250,8 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                 bool is_TK_EPSILON = true;
                                 while (l < v->no_of_tokens && is_TK_EPSILON == true)
                                 {
-                                    // iterate through all the tokens after the token k
-                                    if (v->tokens[l]->is_terminal == 1)
+                                    // iterate through all the ptokens after the token k
+                                    if (v->ptokens[l]->is_terminal == 1)
                                     {
                                         // if the token is a terminal
                                         // check if the terminal is already present in the first set of the current token
@@ -242,7 +259,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                         is_TK_EPSILON = false;
                                         for (int r = 0; r < F.elements[c].no_of_first; r++)
                                         {
-                                            if (F.elements[c].first[r] == v->tokens[l]->name)
+                                            if (F.elements[c].first[r] == v->ptokens[l]->name)
                                             {
                                                 is_present = true;
                                                 break;
@@ -251,7 +268,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                         // if the terminal is not present in the first set of the next token then add it to the follow set of the current token
                                         if (is_present == false)
                                         {
-                                            F.elements[c].follow[F.elements[c].no_of_follow] = v->tokens[l]->name;
+                                            F.elements[c].follow[F.elements[c].no_of_follow] = v->ptokens[l]->name;
                                             F.elements[c].follow_rule[F.elements[c].no_of_follow] = v->rule_no;
                                             F.elements[c].no_of_follow++;
                                         }
@@ -263,7 +280,7 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
                                         int lindex = -2;
                                         for (int i = 0; i < F.no_of_terminals; i++)
                                         {
-                                            if (F.start_variable[i] == v->tokens[l]->name)
+                                            if (F.start_variable[i] == v->ptokens[l]->name)
                                             {
                                                 lindex = i;
                                                 break;
@@ -429,9 +446,9 @@ FirstAndFollow ComputeFirstAndFollowSets(grammer G)
 
 bool createParseTable(FirstAndFollow F, table *T)
 {
-    // Find number of terminal tokens and variables
+    // Find number of terminal ptokens and variables
     T->no_of_rows = F.no_of_variables;
-    T->no_of_columns = F.no_of_terminals + 1;
+    T->no_of_columns = F.no_of_terminals;
     // initialize the rows
     for (int i = 0; i < F.no_of_variables; i++)
     {
@@ -445,12 +462,30 @@ bool createParseTable(FirstAndFollow F, table *T)
     // initialize the tables
     for (int i = 0; i < F.no_of_variables; i++)
     {
-        for (int j = 0; j < F.no_of_terminals + 1; j++)
+        for (int j = 0; j < F.no_of_terminals; j++)
         {
             T->table[i][j] = INT_MIN;
         }
     }
-    // TODO: if map possible in C then can decrease TC by factor of n
+
+    // Heuristic
+    for (int i = 0; i < F.no_of_variables; i++)
+    {
+        for (int j = 0; j < F.elements[i].no_of_follow; j++)
+        {
+            int c = -2;
+            for (int z = 0; z < F.no_of_terminals; z++)
+            {
+                if (F.elements[i].follow[j] == T->column[z])
+                {
+                    c = z;
+                    break;
+                }
+            }
+            T->table[i][c] = INT_MAX;
+        }
+    }
+
     bool is_LL1 = true;
     // iterate through all the variables
     for (int i = 0; i < F.no_of_variables; i++)
@@ -502,34 +537,46 @@ bool createParseTable(FirstAndFollow F, table *T)
     return is_LL1;
 }
 
-void printParseTree(table T, FirstAndFollow F, grammer G, char *input, int n)
+parseTree *parseInputSourceCode(table T, FirstAndFollow F, grammer *G, vector input)
 {
     // parse the input using the parse table and print the parse tree
     // if the input is not valid then print "Input is not valid"
 
-    // initialize the stack
+    // Define the stack
+    int n = input->size;
     int stack[100];
+    // Define the parse tree stack
+    parseTree *ptree[100];
     int top = -1;
+    int treetop = -1;
+    // Initialize the stack and parse tree stack
     stack[++top] = TK_DOLLAR;
-    stack[++top] = G.start_variable[0];
+    stack[++top] = G->start_variable[0];
+    ptree[++treetop] = (parseTree *)malloc(sizeof(parseTree));
+    ptree[treetop]->t = (token)malloc(sizeof(Token));
+    ptree[treetop]->t->tk = stack[top];
+    ptree[treetop]->t->lexeme = NULL;
+    ptree[treetop]->t->lc = -1;
+    ptree[treetop]->parent = -1;
+    ptree[treetop]->no_of_children = 0;
+    parseTree *root = ptree[treetop];
     int i = 0;
-    while (i < n)
+    int erroc = 1, err = 0;
+    // Iterate through the input
+    while (i < n && top > 0)
     {
         int c = -2;
+        // Find the column of the token in the parse table
         for (int j = 0; j < F.no_of_terminals; j++)
         {
-            if (input[i] == T.column[j])
+            if (get(input, i)->tk == T.column[j])
             {
                 c = j;
                 break;
             }
         }
-        if (c == -2)
-        {
-            printf("Input is not valid\n");
-            return;
-        }
         int r = -2;
+        // Find the row of the variable in the parse table
         for (int j = 0; j < F.no_of_variables; j++)
         {
             if (stack[top] == T.row[j])
@@ -538,52 +585,181 @@ void printParseTree(table T, FirstAndFollow F, grammer G, char *input, int n)
                 break;
             }
         }
+        int flag = 1;
+        // Check if the token is valid
+        if (get(input, i)->tk == TK_INVALID || c==-2)
+        {
+            red("Line %d Error: %s\n", get(input, i)->lc, get(input, i)->lexeme);
+            i++;
+            erroc = 0;
+            err = 1;
+            continue;
+        }
+        // Check if the token is valid
         if (r == -2)
         {
-            printf("Input is not valid\n");
-            return;
+            if (erroc)
+                red("Line %d Error: The token %s for lexeme %s does not math with the expected token %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+            top--;
+            treetop--;
+            erroc = 0;
+            err = 1;
+            flag = 0;
         }
-        // printf("%c %c %d %d\n",stack[top],input[i],r,c);
+        // Check if the token is valid
         if (T.table[r][c] == INT_MIN)
         {
-            printf("Input is not valid\n");
-            return;
+            if (erroc)
+                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+            i++;
+            erroc = 0;
+            err = 1;
+            continue;
         }
-        variable *v = G.variables[r];
-        while (v != NULL)
+        // Check if the token is valid
+        if (T.table[r][c] == INT_MAX)
         {
-            if (v->rule_no == T.table[r][c])
+            if (erroc)
+                red("Line %d Error: Invalid token %s encountered with %s stack top %s\n",get(input,i)->lc, TOKENS[get(input, i)->tk],get(input, i)->lexeme ,TOKENS[stack[top]]);
+            top--;
+            treetop--;
+            erroc = 0;
+            flag = 0;
+            err = 1;
+        }
+        if (flag)
+        {
+            // Add the rule to the parse tree
+            variable *v = G->variables[r];
+            while (v != NULL)
             {
-                top--;
-                // push the tokens of the rule to the stack
-                for (int j = v->no_of_tokens - 1; j >= 0; j--)
+                // Retrieve the rule from the parse table
+                if (v->rule_no == T.table[r][c])
                 {
-                    top += 1;
-                    stack[top] = v->tokens[j]->name;
+                    //Replace the variable with the rule in the stack
+                    top--;
+                    parseTree *temp = ptree[treetop];
+                    treetop--;
+                    for (int j = v->no_of_tokens - 1; j >= 0; j--)
+                    {
+                        top += 1;
+                        treetop += 1;
+                        stack[top] = v->ptokens[j]->name;
+                        ptree[treetop] = (parseTree *)malloc(sizeof(parseTree));
+                        ptree[treetop]->t = (token)malloc(sizeof(Token));
+                        ptree[treetop]->t->tk = stack[top];
+                        ptree[treetop]->t->lexeme = NULL;
+                        ptree[treetop]->t->lc = -1;
+                        ptree[treetop]->parent = temp->t->tk;
+                        ptree[treetop]->no_of_children = 0;
+                        temp->children[temp->no_of_children] = ptree[treetop];
+                        temp->no_of_children++;
+                    }
+
+                    break;
                 }
-                break;
+                v = v->next;
             }
-            v = v->next;
         }
-        while (stack[top] == input[i] || stack[top] == TK_EPSILON)
+        // Check if the stack element is equal to the input token
+        while (top > 0 && i < n && (stack[top] == (get(input, i)->tk) || stack[top] == TK_EPSILON))
         {
+            ptree[treetop]->t->lexeme = get(input, i)->lexeme;
+            ptree[treetop]->t->lc = get(input, i)->lc;
             if (stack[top] != TK_EPSILON)
                 i++;
             top--;
+            treetop--;
+            erroc = 1;
         }
     }
-    if (top == 0 && stack[top] == TK_DOLLAR)
+    // Check if the stack is empty and the input is valid
+    if (stack[top] == TK_DOLLAR && err == 0)
     {
-        printf("Input is valid\n");
+        green("Input is valid\n");
     }
     else
     {
-        printf("Input is not valid\n");
+        red("COMPILATION ERROR\n");
     }
-    return;
+    return root;
 }
 
-void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
+void printParseTree(parseTree *ptree, FILE *fp)
+{
+    // print the parse tree in the file
+    // if the file is NULL then print the parse tree in the console
+    if (ptree == NULL)
+    {
+        return;
+    }
+    // If the node is not a leaf node then print the first child
+    if (ptree->children[0] != NULL)
+    {
+        printParseTree(ptree->children[0], fp);
+    }
+    // Print the node
+    if (fp != NULL)
+    {
+        // Print the lexeme
+        if (ptree->t->lexeme != NULL)
+        {
+            fprintf(fp, "%-30s", ptree->t->lexeme);
+        }
+        else
+        {
+            fprintf(fp, "%-30s", "----");
+        }
+        // Print the line number
+        if (ptree->t->lc != -1)
+        {
+            fprintf(fp, "%-30d", ptree->t->lc);
+        }
+        else
+        {
+            fprintf(fp, "%-30s", "----");
+        }
+        // Print tokenName
+        fprintf(fp, "%-30d", ptree->t->tk);
+        // Print ValueIfNumber
+        if (ptree->t->tk == TK_NUM || ptree->t->tk == TK_RNUM)
+        {
+            fprintf(fp, "%-30s", ptree->t->lexeme);
+        }
+        else
+        {
+            fprintf(fp, "%-30s", "----");
+        }
+        // Print Parent Node Symbol
+        if (ptree->parent != -1)
+        {
+            fprintf(fp, "%-30s", TOKENS[ptree->parent]);
+        }
+        else
+        {
+            fprintf(fp, "%-30s", "----");
+        }
+        // Print isLeaf
+        if (ptree->no_of_children == 0)
+        {
+            fprintf(fp, "%-30s", "YES");
+        }
+        else
+        {
+            fprintf(fp, "%-30s", "NO");
+        }
+        // Print NodeSymbol
+        fprintf(fp, "%s", TOKENS[ptree->t->tk]);
+        fprintf(fp, "\n");
+    }
+    // If the node is not a leaf node then print the rest of the children
+    for (int i = 1; i < ptree->no_of_children; i++)
+    {
+        printParseTree(ptree->children[i], fp);
+    }
+}
+
+void add_grammer_rule(grammer *G, int start_variable, int no_of_tokens, int *ptokens)
 {
     // finding the index of the lhs variable
     int index;
@@ -612,19 +788,20 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
         v->next = (variable *)malloc(sizeof(variable));
         v = v->next;
     }
+    // add the rule to the grammer
     v->no_of_tokens = no_of_tokens;
     v->rule_no = G->no_of_rules + 1;
     for (int i = 0; i < no_of_tokens; i++)
     {
 
-        v->tokens[i] = (token *)malloc(sizeof(token));
-        v->tokens[i]->name = tokens[i];
-        v->tokens[i]->is_terminal = 0;
+        v->ptokens[i] = (ptoken *)malloc(sizeof(ptoken));
+        v->ptokens[i]->name = ptokens[i];
+        v->ptokens[i]->is_terminal = 0;
         for (int j = 0; j < G->no_of_terminals; j++)
         {
-            if (G->terminals[j] == tokens[i])
+            if (G->terminals[j] == ptokens[i])
             {
-                v->tokens[i]->is_terminal = 1;
+                v->ptokens[i]->is_terminal = 1;
                 break;
             }
         }
@@ -633,298 +810,231 @@ void grammySays(grammer *G, int start_variable, int no_of_tokens, int *tokens)
     v->next = NULL;
     G->no_of_rules++;
 }
-int main()
+void grammer_init(grammer *G)
 {
-    grammer G;
+    // Initialize the grammer
+    G->no_of_variables = 53;
+    G->no_of_terminals = 61;
+    G->no_of_rules = 0;
 
-    G.no_of_variables = 53;
-    G.no_of_terminals = 61;
-    G.no_of_rules = 0;
+    // Define the start variables
+    G->start_variable[0] = program;
+    G->start_variable[1] = mainFunction;
+    G->start_variable[2] = otherFunctions;
+    G->start_variable[3] = function;
+    G->start_variable[4] = input_par;
+    G->start_variable[5] = output_par;
+    G->start_variable[6] = parameter_list;
+    G->start_variable[7] = dataType;
+    G->start_variable[8] = primitiveDatatype;
+    G->start_variable[9] = constructedDatatype;
+    G->start_variable[10] = remaining_list;
+    G->start_variable[11] = stmts;
+    G->start_variable[12] = typeDefinitions;
+    G->start_variable[13] = typeDefinition;
+    G->start_variable[14] = actualOrRedefined;
+    G->start_variable[15] = fieldDefinitions;
+    G->start_variable[16] = fieldDefinition;
+    G->start_variable[17] = fieldType;
+    G->start_variable[18] = moreFields;
+    G->start_variable[19] = declarations;
+    G->start_variable[20] = declaration;
+    G->start_variable[21] = global_or_not;
+    G->start_variable[22] = otherStmts;
+    G->start_variable[23] = stmt;
+    G->start_variable[24] = assignmentStmt;
+    G->start_variable[25] = singleOrRecId;
+    G->start_variable[26] = option_single_constructed;
+    G->start_variable[27] = oneExpansion;
+    G->start_variable[28] = moreExpansions;
+    G->start_variable[29] = funCallStmt;
+    G->start_variable[30] = outputParameters;
+    G->start_variable[31] = inputParameters;
+    G->start_variable[32] = iterativeStmt;
+    G->start_variable[33] = conditionalStmt;
+    G->start_variable[34] = elsePart;
+    G->start_variable[35] = ioStmt;
+    G->start_variable[36] = arithmeticExpression;
+    G->start_variable[37] = expPrime;
+    G->start_variable[38] = termPrime;
+    G->start_variable[39] = term;
+    G->start_variable[40] = factor;
+    G->start_variable[41] = lowPrecedenceOperators;
+    G->start_variable[42] = highPrecedenceOperators;
+    G->start_variable[43] = booleanExpression;
+    G->start_variable[44] = var;
+    G->start_variable[45] = logicalOp;
+    G->start_variable[46] = relationalOp;
+    G->start_variable[47] = returnStmt;
+    G->start_variable[48] = optionalReturn;
+    G->start_variable[49] = idList;
+    G->start_variable[50] = more_ids;
+    G->start_variable[51] = definetypestmt;
+    G->start_variable[52] = A;
 
-    G.start_variable[0] = program;
-    G.start_variable[1] = mainFunction;
-    G.start_variable[2] = otherFunctions;
-    G.start_variable[3] = function;
-    G.start_variable[4] = input_par;
-    G.start_variable[5] = output_par;
-    G.start_variable[6] = parameter_list;
-    G.start_variable[7] = dataType;
-    G.start_variable[8] = primitiveDatatype;
-    G.start_variable[9] = constructedDatatype;
-    G.start_variable[10] = remaining_list;
-    G.start_variable[11] = stmts;
-    G.start_variable[12] = typeDefinitions;
-    G.start_variable[13] = typeDefinition;
-    G.start_variable[14] = actualOrRedefined;
-    G.start_variable[15] = fieldDefinitions;
-    G.start_variable[16] = fieldDefinition;
-    G.start_variable[17] = fieldType;
-    G.start_variable[18] = moreFields;
-    G.start_variable[19] = declarations;
-    G.start_variable[20] = declaration;
-    G.start_variable[21] = global_or_not;
-    G.start_variable[22] = otherStmts;
-    G.start_variable[23] = stmt;
-    G.start_variable[24] = assignmentStmt;
-    G.start_variable[25] = singleOrRecId;
-    G.start_variable[26] = option_single_constructed;
-    G.start_variable[27] = oneExpansion;
-    G.start_variable[28] = moreExpansions;
-    G.start_variable[29] = funCallStmt;
-    G.start_variable[30] = outputParameters;
-    G.start_variable[31] = inputParameters;
-    G.start_variable[32] = iterativeStmt;
-    G.start_variable[33] = conditionalStmt;
-    G.start_variable[34] = elsePart;
-    G.start_variable[35] = ioStmt;
-    G.start_variable[36] = arithmeticExpression;
-    G.start_variable[37] = expPrime;
-    G.start_variable[38] = termPrime;
-    G.start_variable[39] = term;
-    G.start_variable[40] = factor;
-    G.start_variable[41] = lowPrecedenceOperators;
-    G.start_variable[42] = highPrecedenceOperators;
-    G.start_variable[43] = booleanExpression;
-    G.start_variable[44] = var;
-    G.start_variable[45] = logicalOp;
-    G.start_variable[46] = relationalOp;
-    G.start_variable[47] = returnStmt;
-    G.start_variable[48] = optionalReturn;
-    G.start_variable[49] = idList;
-    G.start_variable[50] = more_ids;
-    G.start_variable[51] = definetypestmt;
-    G.start_variable[52] = A;
+    // Define the terminals
+    G->terminals[0] = TK_NOTOKEN;
+    G->terminals[1] = TK_INVALID;
+    G->terminals[2] = TK_ASSIGNOP;
+    G->terminals[3] = TK_COMMENT;
+    G->terminals[4] = TK_FIELDID;
+    G->terminals[5] = TK_ID;
+    G->terminals[6] = TK_NUM;
+    G->terminals[7] = TK_RNUM;
+    G->terminals[8] = TK_FUNID;
+    G->terminals[9] = TK_RUID;
+    G->terminals[10] = TK_WITH;
+    G->terminals[11] = TK_PARAMETERS;
+    G->terminals[12] = TK_END;
+    G->terminals[13] = TK_WHILE;
+    G->terminals[14] = TK_UNION;
+    G->terminals[15] = TK_ENDUNION;
+    G->terminals[16] = TK_DEFINETYPE;
+    G->terminals[17] = TK_AS;
+    G->terminals[18] = TK_TYPE;
+    G->terminals[19] = TK_MAIN;
+    G->terminals[20] = TK_GLOBAL;
+    G->terminals[21] = TK_PARAMETER;
+    G->terminals[22] = TK_LIST;
+    G->terminals[23] = TK_SQL;
+    G->terminals[24] = TK_SQR;
+    G->terminals[25] = TK_INPUT;
+    G->terminals[26] = TK_OUTPUT;
+    G->terminals[27] = TK_INT;
+    G->terminals[28] = TK_REAL;
+    G->terminals[29] = TK_COMMA;
+    G->terminals[30] = TK_SEM;
+    G->terminals[31] = TK_COLON;
+    G->terminals[32] = TK_DOT;
+    G->terminals[33] = TK_ENDWHILE;
+    G->terminals[34] = TK_OP;
+    G->terminals[35] = TK_CL;
+    G->terminals[36] = TK_IF;
+    G->terminals[37] = TK_THEN;
+    G->terminals[38] = TK_ENDIF;
+    G->terminals[39] = TK_READ;
+    G->terminals[40] = TK_WRITE;
+    G->terminals[41] = TK_RETURN;
+    G->terminals[42] = TK_PLUS;
+    G->terminals[43] = TK_MINUS;
+    G->terminals[44] = TK_MUL;
+    G->terminals[45] = TK_DIV;
+    G->terminals[46] = TK_CALL;
+    G->terminals[47] = TK_RECORD;
+    G->terminals[48] = TK_ENDRECORD;
+    G->terminals[49] = TK_ELSE;
+    G->terminals[50] = TK_AND;
+    G->terminals[51] = TK_OR;
+    G->terminals[52] = TK_NOT;
+    G->terminals[53] = TK_LT;
+    G->terminals[54] = TK_LE;
+    G->terminals[55] = TK_EQ;
+    G->terminals[56] = TK_GT;
+    G->terminals[57] = TK_GE;
+    G->terminals[58] = TK_NE;
+    G->terminals[59] = TK_DOLLAR;
+    G->terminals[60] = TK_EPSILON;
 
-    G.terminals[0] = TK_NOTOKEN;
-    G.terminals[1] = TK_INVALID;
-    G.terminals[2] = TK_ASSIGNOP;
-    G.terminals[3] = TK_COMMENT;
-    G.terminals[4] = TK_FIELDID;
-    G.terminals[5] = TK_ID;
-    G.terminals[6] = TK_NUM;
-    G.terminals[7] = TK_RNUM;
-    G.terminals[8] = TK_FUNID;
-    G.terminals[9] = TK_RUID;
-    G.terminals[10] = TK_WITH;
-    G.terminals[11] = TK_PARAMETERS;
-    G.terminals[12] = TK_END;
-    G.terminals[13] = TK_WHILE;
-    G.terminals[14] = TK_UNION;
-    G.terminals[15] = TK_ENDUNION;
-    G.terminals[16] = TK_DEFINETYPE;
-    G.terminals[17] = TK_AS;
-    G.terminals[18] = TK_TYPE;
-    G.terminals[19] = TK_MAIN;
-    G.terminals[20] = TK_GLOBAL;
-    G.terminals[21] = TK_PARAMETER;
-    G.terminals[22] = TK_LIST;
-    G.terminals[23] = TK_SQL;
-    G.terminals[24] = TK_SQR;
-    G.terminals[25] = TK_INPUT;
-    G.terminals[26] = TK_OUTPUT;
-    G.terminals[27] = TK_INT;
-    G.terminals[28] = TK_REAL;
-    G.terminals[29] = TK_COMMA;
-    G.terminals[30] = TK_SEM;
-    G.terminals[31] = TK_COLON;
-    G.terminals[32] = TK_DOT;
-    G.terminals[33] = TK_ENDWHILE;
-    G.terminals[34] = TK_OP;
-    G.terminals[35] = TK_CL;
-    G.terminals[36] = TK_IF;
-    G.terminals[37] = TK_THEN;
-    G.terminals[38] = TK_ENDIF;
-    G.terminals[39] = TK_READ;
-    G.terminals[40] = TK_WRITE;
-    G.terminals[41] = TK_RETURN;
-    G.terminals[42] = TK_PLUS;
-    G.terminals[43] = TK_MINUS;
-    G.terminals[44] = TK_MUL;
-    G.terminals[45] = TK_DIV;
-    G.terminals[46] = TK_CALL;
-    G.terminals[47] = TK_RECORD;
-    G.terminals[48] = TK_ENDRECORD;
-    G.terminals[49] = TK_ELSE;
-    G.terminals[50] = TK_AND;
-    G.terminals[51] = TK_OR;
-    G.terminals[52] = TK_NOT;
-    G.terminals[53] = TK_LT;
-    G.terminals[54] = TK_LE;
-    G.terminals[55] = TK_EQ;
-    G.terminals[56] = TK_GT;
-    G.terminals[57] = TK_GE;
-    G.terminals[58] = TK_NE;
-    G.terminals[59] = TK_DOLLAR;
-    G.terminals[60] = TK_EPSILON;
-
-    for (int i = 0; i < G.no_of_variables; i++)
+    // Initialize the variables with NULL
+    for (int i = 0; i < G->no_of_variables; i++)
     {
-        G.variables[i] = NULL;
+        G->variables[i] = NULL;
     }
 
-    grammySays(&G, program, 2, (int[]){otherFunctions, mainFunction});
-    grammySays(&G, mainFunction, 3, (int[]){TK_MAIN, stmts, TK_END});
-    grammySays(&G, otherFunctions, 2, (int[]){function, otherFunctions});
-    grammySays(&G, otherFunctions, 1, (int[]){TK_EPSILON});
-    grammySays(&G, function, 6, (int[]){TK_FUNID, input_par, output_par, TK_SEM, stmts, TK_END});
-    grammySays(&G, input_par, 6, (int[]){TK_INPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
-    grammySays(&G, output_par, 6, (int[]){TK_OUTPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
-    grammySays(&G, output_par, 1, (int[]){TK_EPSILON});
-    grammySays(&G, parameter_list, 3, (int[]){dataType, TK_ID, remaining_list});
-    grammySays(&G, dataType, 1, (int[]){primitiveDatatype});
-    grammySays(&G, dataType, 1, (int[]){constructedDatatype});
-    grammySays(&G, primitiveDatatype, 1, (int[]){TK_INT});
-    grammySays(&G, primitiveDatatype, 1, (int[]){TK_REAL});
-    grammySays(&G, constructedDatatype, 2, (int[]){TK_RECORD, TK_RUID});
-    grammySays(&G, constructedDatatype, 2, (int[]){TK_UNION, TK_RUID});
-    grammySays(&G, constructedDatatype, 1, (int[]){TK_RUID});
-    grammySays(&G, remaining_list, 2, (int[]){TK_COMMA, parameter_list});
-    grammySays(&G, remaining_list, 1, (int[]){TK_EPSILON});
-    grammySays(&G, stmts, 4, (int[]){typeDefinitions, declarations, otherStmts, returnStmt});
-    grammySays(&G, typeDefinitions, 2, (int[]){actualOrRedefined, typeDefinitions});
-    grammySays(&G, typeDefinitions, 1, (int[]){TK_EPSILON});
-    grammySays(&G, actualOrRedefined, 1, (int[]){typeDefinition});
-    grammySays(&G, actualOrRedefined, 1, (int[]){definetypestmt});
-    grammySays(&G, typeDefinition, 4, (int[]){TK_RECORD, TK_RUID, fieldDefinitions, TK_ENDRECORD});
-    grammySays(&G, typeDefinition, 4, (int[]){TK_UNION, TK_RUID, fieldDefinitions, TK_ENDUNION});
-    grammySays(&G, fieldDefinitions, 3, (int[]){fieldDefinition, fieldDefinition, moreFields});
-    grammySays(&G, fieldDefinition, 5, (int[]){TK_TYPE, fieldType, TK_COLON, TK_FIELDID, TK_SEM});
-    grammySays(&G, fieldType, 1, (int[]){primitiveDatatype});
-    grammySays(&G, fieldType, 1, (int[]){constructedDatatype});
-    grammySays(&G, moreFields, 2, (int[]){fieldDefinition, moreFields});
-    grammySays(&G, moreFields, 1, (int[]){TK_EPSILON});
-    grammySays(&G, declarations, 2, (int[]){declaration, declarations});
-    grammySays(&G, declarations, 1, (int[]){TK_EPSILON});
-    grammySays(&G, declaration, 6, (int[]){TK_TYPE, dataType, TK_COLON, TK_ID, global_or_not, TK_SEM});
-    grammySays(&G, global_or_not, 2, (int[]){TK_COLON, TK_GLOBAL});
-    grammySays(&G, global_or_not, 1, (int[]){TK_EPSILON});
-    grammySays(&G, otherStmts, 2, (int[]){stmt, otherStmts});
-    grammySays(&G, otherStmts, 1, (int[]){TK_EPSILON});
-    grammySays(&G, stmt, 1, (int[]){assignmentStmt});
-    grammySays(&G, stmt, 1, (int[]){iterativeStmt});
-    grammySays(&G, stmt, 1, (int[]){conditionalStmt});
-    grammySays(&G, stmt, 1, (int[]){ioStmt});
-    grammySays(&G, stmt, 1, (int[]){funCallStmt});
-    grammySays(&G, assignmentStmt, 4, (int[]){singleOrRecId, TK_ASSIGNOP, arithmeticExpression, TK_SEM});
-    grammySays(&G, singleOrRecId, 2, (int[]){TK_ID, option_single_constructed});
-    grammySays(&G, option_single_constructed, 1, (int[]){TK_EPSILON});
-    grammySays(&G, option_single_constructed, 2, (int[]){oneExpansion, moreExpansions});
-    grammySays(&G, oneExpansion, 2, (int[]){TK_DOT, TK_FIELDID});
-    grammySays(&G, moreExpansions, 2, (int[]){oneExpansion, moreExpansions});
-    grammySays(&G, moreExpansions, 1, (int[]){TK_EPSILON});
-    grammySays(&G, funCallStmt, 7, (int[]){outputParameters, TK_CALL, TK_FUNID, TK_WITH, TK_PARAMETERS, inputParameters, TK_SEM});
-    grammySays(&G, outputParameters, 4, (int[]){TK_SQL, idList, TK_SQR, TK_ASSIGNOP});
-    grammySays(&G, outputParameters, 1, (int[]){TK_EPSILON});
-    grammySays(&G, inputParameters, 3, (int[]){TK_SQL, idList, TK_SQR});
-    grammySays(&G, iterativeStmt, 7, (int[]){TK_WHILE, TK_OP, booleanExpression, TK_CL, stmt, otherStmts, TK_ENDWHILE});
-    // grammySays(&G, conditionalStmt, 8, (int[]){TK_IF, booleanExpression, TK_THEN, stmt, otherStmts, TK_ELSE, otherStmts, TK_ENDIF});
-    grammySays(&G, conditionalStmt, 8, (int[]){TK_IF, TK_OP, booleanExpression, TK_CL, TK_THEN, stmt, otherStmts, elsePart});
-    grammySays(&G, elsePart, 4, (int[]){TK_ELSE, stmt, otherStmts, TK_ENDIF});
-    grammySays(&G, elsePart, 1, (int[]){TK_ENDIF});
-    grammySays(&G, ioStmt, 5, (int[]){TK_READ, TK_OP, var, TK_CL, TK_SEM});
-    grammySays(&G, ioStmt, 5, (int[]){TK_WRITE, TK_OP, var, TK_CL, TK_SEM});
-    grammySays(&G, arithmeticExpression, 2, (int[]){term, expPrime});
-    grammySays(&G, expPrime, 3, (int[]){lowPrecedenceOperators, term, expPrime});
-    grammySays(&G, expPrime, 1, (int[]){TK_EPSILON});
-    grammySays(&G, term, 2, (int[]){factor, termPrime});
-    grammySays(&G, termPrime, 3, (int[]){highPrecedenceOperators, factor, termPrime});
-    grammySays(&G, termPrime, 1, (int[]){TK_EPSILON});
-    grammySays(&G, factor, 3, (int[]){TK_OP, arithmeticExpression, TK_CL});
-    grammySays(&G, factor, 1, (int[]){var});
-    grammySays(&G, highPrecedenceOperators, 1, (int[]){TK_MUL});
-    grammySays(&G, highPrecedenceOperators, 1, (int[]){TK_DIV});
-    grammySays(&G, lowPrecedenceOperators, 1, (int[]){TK_PLUS});
-    grammySays(&G, lowPrecedenceOperators, 1, (int[]){TK_MINUS});
-    grammySays(&G, booleanExpression, 7, (int[]){TK_OP, booleanExpression, TK_CL, logicalOp, TK_OP, booleanExpression, TK_CL});
-    grammySays(&G, booleanExpression, 3, (int[]){var, relationalOp, var});
-    grammySays(&G, booleanExpression, 4, (int[]){TK_NOT, TK_OP, booleanExpression, TK_CL});
-    grammySays(&G, var, 1, (int[]){singleOrRecId});
-    grammySays(&G, var, 1, (int[]){TK_NUM});
-    grammySays(&G, var, 1, (int[]){TK_RNUM});
-    grammySays(&G, logicalOp, 1, (int[]){TK_AND});
-    grammySays(&G, logicalOp, 1, (int[]){TK_OR});
-    grammySays(&G, relationalOp, 1, (int[]){TK_LT});
-    grammySays(&G, relationalOp, 1, (int[]){TK_LE});
-    grammySays(&G, relationalOp, 1, (int[]){TK_EQ});
-    grammySays(&G, relationalOp, 1, (int[]){TK_GT});
-    grammySays(&G, relationalOp, 1, (int[]){TK_GE});
-    grammySays(&G, relationalOp, 1, (int[]){TK_NE});
-    grammySays(&G, returnStmt, 3, (int[]){TK_RETURN, optionalReturn, TK_SEM});
-    grammySays(&G, optionalReturn, 3, (int[]){TK_SQL, idList, TK_SQR});
-    grammySays(&G, optionalReturn, 1, (int[]){TK_EPSILON});
-    grammySays(&G, idList, 2, (int[]){TK_ID, more_ids});
-    grammySays(&G, more_ids, 2, (int[]){TK_COMMA, idList});
-    grammySays(&G, more_ids, 1, (int[]){TK_EPSILON});
-    grammySays(&G, definetypestmt, 5, (int[]){TK_DEFINETYPE, A, TK_RUID, TK_AS, TK_RUID});
-    grammySays(&G, A, 1, (int[]){TK_RECORD});
-    grammySays(&G, A, 1, (int[]){TK_UNION});
-
-    FirstAndFollow F = ComputeFirstAndFollowSets(G);
-    // Print First and Follow Sets
-    // for (int i = 0; i < F.no_of_variables; i++)
-    // {
-    //     printf("First Set of %s: ", TOKENS[F.start_variable[i]]);
-    //     for (int j = 0; j < F.elements[i].no_of_first; j++)
-    //     {
-    //         if(F.elements[i].first[j] == TK_EPSILON)
-    //         {
-    //             printf("TK_TK_EPSILON ");
-    //             continue;
-    //         }
-    //         printf("%s ", TOKENS[F.elements[i].first[j]]);
-    //     }
-    //     printf("\n");
-    // }
-    for (int i = 0; i < F.no_of_variables; i++)
-    {
-        printf("{ %s ", TOKENS[F.start_variable[i]]);
-        for (int j = 0; j < F.elements[i].no_of_follow; j++)
-        {
-            printf("%s ", TOKENS[F.elements[i].follow[j]]);
-        }
-        printf("}\n");
-    }
-    // table T;
-    // bool is_LL1 = createParseTable(F, &T);
-    // Print Parse Table
-    // printf("0 ");
-    // for (int i = 0; i < T.no_of_columns; i++)
-    // {
-    //     printf("%s ", TOKENS[T.column[i]]);
-    // }
-    // printf("\n");
-    // for (int i = 0; i < T.no_of_rows; i++)
-    // {
-    //     printf("%s ", TOKENS[T.row[i]]);
-    //     for (int j = 0; j < T.no_of_columns; j++)
-    //     {
-    //         if(T.table[i][j] == INT_MIN)
-    //         {
-    //             printf("- ");
-    //         }
-    //         else
-    //         printf("%d ", T.table[i][j]);
-    //     }
-    //     printf("\n");
-    // }
-    // print all the rules of the grammer in the form of a table with the rule number and the rule
-    for (int i = 0; i < G.no_of_variables; i++)
-    {
-        variable *v = G.variables[i];
-        while (v != NULL)
-        {
-            printf("%d: %s -> ", v->rule_no, TOKENS[G.start_variable[i]]);
-            for (int j = 0; j < v->no_of_tokens; j++)
-            {
-                printf("%s ", TOKENS[v->tokens[j]->name]);
-            }
-            printf("\n");
-            v = v->next;
-        }
-    }
-    // print the parse tree
-    // char input[4] = {'a', 'c','d' ,'b'};
-    // printParseTree(T, F, G, input, 4);
-
-    return 0;
+    // Define the rules
+    add_grammer_rule(G, program, 2, (int[]){otherFunctions, mainFunction});
+    add_grammer_rule(G, mainFunction, 3, (int[]){TK_MAIN, stmts, TK_END});
+    add_grammer_rule(G, otherFunctions, 2, (int[]){function, otherFunctions});
+    add_grammer_rule(G, otherFunctions, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, function, 6, (int[]){TK_FUNID, input_par, output_par, TK_SEM, stmts, TK_END});
+    add_grammer_rule(G, input_par, 6, (int[]){TK_INPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
+    add_grammer_rule(G, output_par, 6, (int[]){TK_OUTPUT, TK_PARAMETER, TK_LIST, TK_SQL, parameter_list, TK_SQR});
+    add_grammer_rule(G, output_par, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, parameter_list, 3, (int[]){dataType, TK_ID, remaining_list});
+    add_grammer_rule(G, dataType, 1, (int[]){primitiveDatatype});
+    add_grammer_rule(G, dataType, 1, (int[]){constructedDatatype});
+    add_grammer_rule(G, primitiveDatatype, 1, (int[]){TK_INT});
+    add_grammer_rule(G, primitiveDatatype, 1, (int[]){TK_REAL});
+    add_grammer_rule(G, constructedDatatype, 2, (int[]){TK_RECORD, TK_RUID});
+    add_grammer_rule(G, constructedDatatype, 2, (int[]){TK_UNION, TK_RUID});
+    add_grammer_rule(G, constructedDatatype, 1, (int[]){TK_RUID});
+    add_grammer_rule(G, remaining_list, 2, (int[]){TK_COMMA, parameter_list});
+    add_grammer_rule(G, remaining_list, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, stmts, 4, (int[]){typeDefinitions, declarations, otherStmts, returnStmt});
+    add_grammer_rule(G, typeDefinitions, 2, (int[]){actualOrRedefined, typeDefinitions});
+    add_grammer_rule(G, typeDefinitions, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, actualOrRedefined, 1, (int[]){typeDefinition});
+    add_grammer_rule(G, actualOrRedefined, 1, (int[]){definetypestmt});
+    add_grammer_rule(G, typeDefinition, 4, (int[]){TK_RECORD, TK_RUID, fieldDefinitions, TK_ENDRECORD});
+    add_grammer_rule(G, typeDefinition, 4, (int[]){TK_UNION, TK_RUID, fieldDefinitions, TK_ENDUNION});
+    add_grammer_rule(G, fieldDefinitions, 3, (int[]){fieldDefinition, fieldDefinition, moreFields});
+    add_grammer_rule(G, fieldDefinition, 5, (int[]){TK_TYPE, fieldType, TK_COLON, TK_FIELDID, TK_SEM});
+    add_grammer_rule(G, fieldType, 1, (int[]){primitiveDatatype});
+    add_grammer_rule(G, fieldType, 1, (int[]){constructedDatatype});
+    add_grammer_rule(G, moreFields, 2, (int[]){fieldDefinition, moreFields});
+    add_grammer_rule(G, moreFields, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, declarations, 2, (int[]){declaration, declarations});
+    add_grammer_rule(G, declarations, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, declaration, 6, (int[]){TK_TYPE, dataType, TK_COLON, TK_ID, global_or_not, TK_SEM});
+    add_grammer_rule(G, global_or_not, 2, (int[]){TK_COLON, TK_GLOBAL});
+    add_grammer_rule(G, global_or_not, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, otherStmts, 2, (int[]){stmt, otherStmts});
+    add_grammer_rule(G, otherStmts, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, stmt, 1, (int[]){assignmentStmt});
+    add_grammer_rule(G, stmt, 1, (int[]){iterativeStmt});
+    add_grammer_rule(G, stmt, 1, (int[]){conditionalStmt});
+    add_grammer_rule(G, stmt, 1, (int[]){ioStmt});
+    add_grammer_rule(G, stmt, 1, (int[]){funCallStmt});
+    add_grammer_rule(G, assignmentStmt, 4, (int[]){singleOrRecId, TK_ASSIGNOP, arithmeticExpression, TK_SEM});
+    add_grammer_rule(G, singleOrRecId, 2, (int[]){TK_ID, option_single_constructed});
+    add_grammer_rule(G, option_single_constructed, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, option_single_constructed, 2, (int[]){oneExpansion, moreExpansions});
+    add_grammer_rule(G, oneExpansion, 2, (int[]){TK_DOT, TK_FIELDID});
+    add_grammer_rule(G, moreExpansions, 2, (int[]){oneExpansion, moreExpansions});
+    add_grammer_rule(G, moreExpansions, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, funCallStmt, 7, (int[]){outputParameters, TK_CALL, TK_FUNID, TK_WITH, TK_PARAMETERS, inputParameters, TK_SEM});
+    add_grammer_rule(G, outputParameters, 4, (int[]){TK_SQL, idList, TK_SQR, TK_ASSIGNOP});
+    add_grammer_rule(G, outputParameters, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, inputParameters, 3, (int[]){TK_SQL, idList, TK_SQR});
+    add_grammer_rule(G, iterativeStmt, 7, (int[]){TK_WHILE, TK_OP, booleanExpression, TK_CL, stmt, otherStmts, TK_ENDWHILE});
+    add_grammer_rule(G, conditionalStmt, 8, (int[]){TK_IF, TK_OP, booleanExpression, TK_CL, TK_THEN, stmt, otherStmts, elsePart});
+    add_grammer_rule(G, elsePart, 4, (int[]){TK_ELSE, stmt, otherStmts, TK_ENDIF});
+    add_grammer_rule(G, elsePart, 1, (int[]){TK_ENDIF});
+    add_grammer_rule(G, ioStmt, 5, (int[]){TK_READ, TK_OP, var, TK_CL, TK_SEM});
+    add_grammer_rule(G, ioStmt, 5, (int[]){TK_WRITE, TK_OP, var, TK_CL, TK_SEM});
+    add_grammer_rule(G, arithmeticExpression, 2, (int[]){term, expPrime});
+    add_grammer_rule(G, expPrime, 3, (int[]){lowPrecedenceOperators, term, expPrime});
+    add_grammer_rule(G, expPrime, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, term, 2, (int[]){factor, termPrime});
+    add_grammer_rule(G, termPrime, 3, (int[]){highPrecedenceOperators, factor, termPrime});
+    add_grammer_rule(G, termPrime, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, factor, 3, (int[]){TK_OP, arithmeticExpression, TK_CL});
+    add_grammer_rule(G, factor, 1, (int[]){var});
+    add_grammer_rule(G, highPrecedenceOperators, 1, (int[]){TK_MUL});
+    add_grammer_rule(G, highPrecedenceOperators, 1, (int[]){TK_DIV});
+    add_grammer_rule(G, lowPrecedenceOperators, 1, (int[]){TK_PLUS});
+    add_grammer_rule(G, lowPrecedenceOperators, 1, (int[]){TK_MINUS});
+    add_grammer_rule(G, booleanExpression, 7, (int[]){TK_OP, booleanExpression, TK_CL, logicalOp, TK_OP, booleanExpression, TK_CL});
+    add_grammer_rule(G, booleanExpression, 3, (int[]){var, relationalOp, var});
+    add_grammer_rule(G, booleanExpression, 4, (int[]){TK_NOT, TK_OP, booleanExpression, TK_CL});
+    add_grammer_rule(G, var, 1, (int[]){singleOrRecId});
+    add_grammer_rule(G, var, 1, (int[]){TK_NUM});
+    add_grammer_rule(G, var, 1, (int[]){TK_RNUM});
+    add_grammer_rule(G, logicalOp, 1, (int[]){TK_AND});
+    add_grammer_rule(G, logicalOp, 1, (int[]){TK_OR});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_LT});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_LE});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_EQ});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_GT});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_GE});
+    add_grammer_rule(G, relationalOp, 1, (int[]){TK_NE});
+    add_grammer_rule(G, returnStmt, 3, (int[]){TK_RETURN, optionalReturn, TK_SEM});
+    add_grammer_rule(G, optionalReturn, 3, (int[]){TK_SQL, idList, TK_SQR});
+    add_grammer_rule(G, optionalReturn, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, idList, 2, (int[]){TK_ID, more_ids});
+    add_grammer_rule(G, more_ids, 2, (int[]){TK_COMMA, idList});
+    add_grammer_rule(G, more_ids, 1, (int[]){TK_EPSILON});
+    add_grammer_rule(G, definetypestmt, 5, (int[]){TK_DEFINETYPE, A, TK_RUID, TK_AS, TK_RUID});
+    add_grammer_rule(G, A, 1, (int[]){TK_RECORD});
+    add_grammer_rule(G, A, 1, (int[]){TK_UNION});
 }

@@ -5,6 +5,16 @@
     "stdio.h": "c",
     "string.h": "c",
     "salad.h": "c",
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "parserdef.h": "c",
+    "vector.h": "c",
+    "utils.h": "c",
+    "lexer.h": "c",
+    "parser.h": "c",
+    "stack.h": "c",
+    "trie.h": "c",
+    "__locale": "c",
+    "string": "c",
+    "string_view": "c"
   }
 }

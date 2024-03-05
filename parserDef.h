@@ -1,176 +1,108 @@
+#ifndef PARSERDEF_H
+#define PARSERDEF_H
 #include <stdbool.h>
+#include "lexerDef.h"
+#include "util.h"
 
 #define MAX_TOKENS 100
 
-const char* const TOKENS[] = {"program","mainFunction","otherFunctions","function","input_par","output_par","parameter_list","dataType","primitiveDatatype","constructedDatatype","remaining_list","stmts","typeDefinitions","typeDefinition","actualOrRedefined","fieldDefinitions","fieldDefinition","fieldType","moreFields","declarations","declaration","global_or_not","otherStmts","stmt","assignmentStmt","singleOrRecId","option_single_constructed","oneExpansion","moreExpansions","funCallStmt","outputParameters","inputParameters","iterativeStmt","conditionalStmt","elsePart","ioStmt","arithmeticExpression","expPrime","termPrime","term","factor","lowPrecedenceOperators","highPrecedenceOperators","booleanExpression","var","logicalOp","relationalOp","returnStmt","optionalReturn","idList","more_ids","definetypestmt","A","TK_NOTOKEN","TK_INVALID","TK_ASSIGNOP","TK_COMMENT","TK_FIELDID","TK_ID","TK_NUM","TK_RNUM","TK_FUNID","TK_RUID","TK_WITH","TK_PARAMETERS","TK_END","TK_WHILE","TK_UNION","TK_ENDUNION","TK_DEFINETYPE","TK_AS","TK_TYPE","TK_MAIN","TK_GLOBAL","TK_PARAMETER","TK_LIST","TK_SQL","TK_SQR","TK_INPUT","TK_OUTPUT","TK_INT","TK_REAL","TK_COMMA","TK_SEM","TK_COLON","TK_DOT","TK_ENDWHILE","TK_OP","TK_CL","TK_IF","TK_THEN","TK_ENDIF","TK_READ","TK_WRITE","TK_RETURN","TK_PLUS","TK_MINUS","TK_MUL","TK_DIV","TK_CALL","TK_RECORD","TK_ENDRECORD","TK_ELSE","TK_AND","TK_OR","TK_NOT","TK_LT","TK_LE","TK_EQ","TK_GT","TK_GE","TK_NE","TK_DOLLAR","TK_EPSILON",0};
-
-typedef enum tokens
+// ptokens are the tokens of the grammer
+typedef struct ptoken
 {
-    program,
-    mainFunction,
-    otherFunctions,
-    function,
-    input_par,
-    output_par,
-    parameter_list,
-    dataType,
-    primitiveDatatype,
-    constructedDatatype,
-    remaining_list,
-    stmts,
-    typeDefinitions,
-    typeDefinition,
-    actualOrRedefined,
-    fieldDefinitions,
-    fieldDefinition,
-    fieldType,
-    moreFields,
-    declarations,
-    declaration,
-    global_or_not,
-    otherStmts,
-    stmt,
-    assignmentStmt,
-    singleOrRecId,
-    option_single_constructed,
-    oneExpansion,
-    moreExpansions,
-    funCallStmt,
-    outputParameters,
-    inputParameters,
-    iterativeStmt,
-    conditionalStmt,
-    elsePart,
-    ioStmt,
-    arithmeticExpression,
-    expPrime,
-    termPrime,
-    term,
-    factor,
-    lowPrecedenceOperators,
-    highPrecedenceOperators,
-    booleanExpression,
-    var,
-    logicalOp,
-    relationalOp,
-    returnStmt,
-    optionalReturn,
-    idList,
-    more_ids,
-    definetypestmt,
-    A,
-    TK_NOTOKEN,
-    TK_INVALID,
-    TK_ASSIGNOP,
-    TK_COMMENT,
-    TK_FIELDID,
-    TK_ID,
-    TK_NUM,
-    TK_RNUM,
-    TK_FUNID,
-    TK_RUID,
-    TK_WITH,
-    TK_PARAMETERS,
-    TK_END,
-    TK_WHILE,
-    TK_UNION,
-    TK_ENDUNION,
-    TK_DEFINETYPE,
-    TK_AS,
-    TK_TYPE,
-    TK_MAIN,
-    TK_GLOBAL,
-    TK_PARAMETER,
-    TK_LIST,
-    TK_SQL,
-    TK_SQR,
-    TK_INPUT,
-    TK_OUTPUT,
-    TK_INT,
-    TK_REAL,
-    TK_COMMA,
-    TK_SEM,
-    TK_COLON,
-    TK_DOT,
-    TK_ENDWHILE,
-    TK_OP,
-    TK_CL,
-    TK_IF,
-    TK_THEN,
-    TK_ENDIF,
-    TK_READ,
-    TK_WRITE,
-    TK_RETURN,
-    TK_PLUS,
-    TK_MINUS,
-    TK_MUL,
-    TK_DIV,
-    TK_CALL,
-    TK_RECORD,
-    TK_ENDRECORD,
-    TK_ELSE,
-    TK_AND,
-    TK_OR,
-    TK_NOT,
-    TK_LT,
-    TK_LE,
-    TK_EQ,
-    TK_GT,
-    TK_GE,
-    TK_NE,
-    TK_DOLLAR,
-    TK_EPSILON
-} tokens;
-
-typedef struct token
-{
+    // name is the index of the token in the grammer
     int name;
+    // is_terminal is 1 if the token is a terminal and 0 if it is a non-terminal
     int is_terminal;
-} token;
+} ptoken;
 
-typedef struct variable variable;
+// variable is a RHS of a rule in the grammer
 typedef struct variable
 {
+    // no_of_tokens is the number of tokens in the rule
     int no_of_tokens;
+    // rule_no is the index of the rule in the variable
     int rule_no;
-    token *tokens[MAX_TOKENS];
-    variable *next;
+    // ptokens are the tokens of the rule
+    ptoken *ptokens[MAX_TOKENS];
+    // next is the next RHS with the same LHS in the grammer
+    struct variable *next;
 } variable;
 
+// grammer is the grammer of the language
 typedef struct grammer
 {
+    // no_of_variables is the number of non-terminals in the grammer
     int no_of_variables;
+    // no_of_terminals is the number of terminals in the grammer
     int no_of_terminals;
+    // no_of_rules is the number of rules in the grammer
     int no_of_rules;
+    // terminals are the terminals in the grammer
     int terminals[MAX_TOKENS];
+    // start_variable is the index of the start variable in the grammer
     int start_variable[MAX_TOKENS];
+    // variables are the RHSs of the rule with start_variable as LHS
     variable *variables[MAX_TOKENS];
 } grammer;
 
+// first_follow_element is the first and follow set of a non-terminal
 typedef struct first_follow_element
 {
+    // no_of_first is the number of tokens in the first set
     int no_of_first;
+    // no_of_follow is the number of tokens in the follow set
     int no_of_follow;
+    // first is the first set of the non-terminal
     int first[MAX_TOKENS];
+    // first_rule is the index of the rule in the grammer for each token in first
     int first_rule[MAX_TOKENS];
+    // follow is the follow set of the non-terminal
     int follow[MAX_TOKENS];
+    // follow_rule is the index of the rule in the grammer for each token in follow
     int follow_rule[MAX_TOKENS];
 } first_follow_element;
 
+// FirstAndFollow is the first and follow set of the language
 typedef struct FirstAndFollow
 {
+    // no_of_terminals is the number of terminals in the language
     int no_of_terminals;
+    // no_of_variables is the number of non-terminals in the language
     int no_of_variables;
+    // start_variable is the index of the start variable in the language
     int start_variable[MAX_TOKENS];
+    // terminals are the terminals in the language
     int terminals[MAX_TOKENS];
+    // first_follow_element is the first and follow set of each non-terminal
     first_follow_element elements[MAX_TOKENS];
 } FirstAndFollow;
 
+// table is the parsing table of the language
 typedef struct table
 {
+    // no_of_rows is the number of non-terminals in the language
     int no_of_rows;
+    // no_of_columns is the number of terminals in the language
     int no_of_columns;
+    // row is the index of the non-terminal in the language
     int row[MAX_TOKENS];
+    // column is the index of the terminal in the language
     int column[MAX_TOKENS];
+    // table is the parsing table
     int table[MAX_TOKENS][MAX_TOKENS];
 } table;
+
+// parseTree is the parse tree of the language
+typedef struct parseTree
+{
+    // t is the token of the node
+    token t;
+    // parent is the index of the parent in the parse tree
+    int parent;
+    // no_of_children is the number of children of the node
+    int no_of_children;
+    // children are the children of the node
+    struct parseTree *children[MAX_TOKENS];
+} parseTree;
+
+#endif

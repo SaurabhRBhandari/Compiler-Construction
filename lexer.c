@@ -1,82 +1,6 @@
-#ifndef LEXERDEF_H
 #include "lexerDef.h"
-#define LEXERDEF_H
-#endif
 
-// TODO: move to other file
-
-// create a new vector
-vector init_vector()
-{
-    vector v = (vector)malloc(sizeof(Vector));
-    v->data = (token *)malloc(sizeof(Token) * 10);
-    v->size = 0;
-    v->capacity = 10;
-    return v;
-}
-
-// push a new element to the vector
-void push_back(vector v, token data)
-{
-    if (v->size == v->capacity)
-    {
-        v->capacity *= 2;
-        v->data = (token *)realloc(v->data, sizeof(Token) * v->capacity);
-    }
-    v->data[v->size++] = data;
-}
-
-token get(vector v, int i)
-{
-    return v->data[i];
-}
-
-// TODO: move trie to other file
-#define ALPHABET 27
-trie getTrieNode(void)
-{
-    trie newNode = (trie)malloc(sizeof(Trie));
-    newNode->token = TK_INVALID;
-    for (int i = 0; i < ALPHABET; i++)
-        newNode->characters[i] = NULL;
-    return newNode;
-}
-
-void insert(trie root, const char *key, token_id token)
-{
-    int i, size = strlen(key), index;
-    trie curr = root;
-    for (i = 0; i < size; i++)
-    {
-        if (key[i] == '_')
-            index = 26;
-        else
-            index = (int)key[i] - (int)'a';
-        if (!curr->characters[index])
-            curr->characters[index] = getTrieNode();
-        curr = curr->characters[index];
-    }
-    curr->token = token;
-}
-
-token_id search(trie root, const char *key)
-{
-    int i, size = strlen(key), index;
-    trie curr = root;
-    for (i = 0; i < size; i++)
-    {
-        if (key[i] == '_')
-            index = 26;
-        else
-            index = (int)key[i] - (int)'a';
-        if (!curr->characters[index])
-            return TK_INVALID;
-        curr = curr->characters[index];
-    }
-    return curr->token;
-}
-#undef ALPHABET
-
+// Returns a New Token with a given token_id, line count and lexeme
 token getNewToken(token_id id, int lc, char *lexeme)
 {
     token newToken = (token)malloc(sizeof(Token));
@@ -87,6 +11,7 @@ token getNewToken(token_id id, int lc, char *lexeme)
     return newToken;
 }
 
+// Adds transitions to the state
 void add_transition(state_id state, transition *transitions, int transition_count)
 {
     int new_length = states[state].length + transition_count;
@@ -98,116 +23,7 @@ void add_transition(state_id state, transition *transitions, int transition_coun
     states[state].length = new_length;
 }
 
-transition f(char ch, state_id next_state)
-{
-    transition t = (transition)malloc(sizeof(Transition));
-    t->next_state = &states[next_state];
-    t->next_char = ch;
-    return t;
-}
-
-transition *aToZExceptBToD(state_id next_state)
-{
-    int size = 23;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 'a'; i <= 'z'; i++)
-    {
-        if (i != 'b' && i != 'c' && i != 'd')
-        {
-            transitions[j++] = f(i, next_state);
-        }
-    }
-    return transitions;
-}
-
-transition *aToZ(state_id next_state)
-{
-    int size = 26;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 'a'; i <= 'z'; i++)
-    {
-        transitions[j++] = f(i, next_state);
-    }
-    return transitions;
-}
-transition *AToZ(state_id next_state)
-{
-    int size = 52;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 'a'; i <= 'z'; i++)
-    {
-        transitions[j++] = f(i, next_state);
-    }
-    for (int i = 'A'; i <= 'Z'; i++)
-    {
-        transitions[j++] = f(i, next_state);
-    }
-    return transitions;
-}
-
-transition *bToD(state_id next_state)
-{
-    int size = 3;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 'b'; i <= 'd'; i++)
-    {
-        transitions[j++] = f(i, next_state);
-    }
-    return transitions;
-}
-
-transition *zeroToNine(state_id next_state)
-{
-    int size = 10;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 0; i < 10; i++)
-    {
-        transitions[j++] = f(i + '0', next_state);
-    }
-    return transitions;
-}
-
-transition *twoToSeven(state_id next_state)
-{
-    int size = 6;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 0; i < 6; i++)
-    {
-        transitions[j++] = f(i + '2', next_state);
-    }
-    return transitions;
-}
-
-void theta(state_id curr_state, state_id next_state)
-{
-    // TODO: Write O(n) code instead
-    int size = ALPHABET_SIZE - states[curr_state].length;
-    transition *transitions = (transition *)malloc(size * sizeof(transition));
-    int j = 0;
-    for (int i = 0; i < ALPHABET_SIZE; i++)
-    {
-        bool flag = false;
-        for (int j = 0; j < states[curr_state].length; j++)
-        {
-            if (states[curr_state].transitions[j]->next_char == ALPHABETS[i])
-            {
-                flag = true;
-                break;
-            }
-        }
-        if (!flag)
-        {
-            transitions[j++] = f(ALPHABETS[i], next_state);
-        }
-    }
-    add_transition(curr_state, transitions, size);
-}
+// Initializes the states of the DFA
 void initialize_states()
 {
     for (int i = 0; i < MAX_STATES; i++)
@@ -267,6 +83,7 @@ void initialize_states()
     states[INVALID].retract_count = 1;
 }
 
+// Initializes the transitions of the DFA
 void initialize_transitions()
 {
     add_transition(START, (transition[]){f('%', S_0), f(' ', S_2), f('\n', S_3), f('~', S_4), f('[', S_5), f(']', S_6), f(',', S_7), f(';', S_8), f(':', S_9), f('.', S_10), f('(', S_11), f(')', S_12), f('=', S_13), f('+', S_15), f('-', S_16), f('!', S_17), f('@', S_19), f('&', S_22), f('#', S_25), f('*', S_28), f('>', S_29), f('<', S_32), f('/', S_39), f('_', S_40), f('\t', S_60)}, 25);
@@ -320,6 +137,7 @@ void initialize_transitions()
     add_transition(S_59, zeroToNine(S_57), 10);
 }
 
+// Initializes the lookup table with the keywords and their respective tokens
 void initialize_lookup_table()
 {
     look_up_table = getTrieNode();
@@ -353,21 +171,7 @@ void initialize_lookup_table()
     insert(look_up_table, "else", TK_ELSE);
 }
 
-// print the graph, for debugging
-void print_graph()
-{
-    FILE *fp = fopen("graph.txt", "w");
-    for (int i = 0; i < MAX_STATES; i++)
-    {
-        fprintf(fp, "%d : ", i);
-        for (int j = 0; j < states[i].length; j++)
-        {
-            fprintf(fp, "\t[%c -> %d] ", states[i].transitions[j]->next_char, states[i].transitions[j]->next_state->state_id);
-        }
-        fprintf(fp, "\n\n\n");
-    }
-}
-
+// Returns the Lexical Token List of the file
 vector getStream(FILE *fp)
 {
     if (fp == NULL)
@@ -378,7 +182,7 @@ vector getStream(FILE *fp)
     twinBuffer buffer = (twinBuffer)malloc(sizeof(struct TwinBuffer));
     buffer->secondary_buffer_index = 0;
     buffer->line_count = 1;
-    FILE *new_fp = fopen("a.salad", "w");
+    FILE *new_fp = fopen("lexical_tokens.salad", "w");
     if (new_fp == NULL)
     {
         printf("Error: Could not create a new file\n");
@@ -386,9 +190,7 @@ vector getStream(FILE *fp)
     }
     fprintf(new_fp, "%-30s %-30s %s\n", "Line", "Lexeme", "Token");
     fprintf(new_fp, "%-30s %-30s %s\n", "----", "------", "-----");
-    red("%-30s", "Line");
-    red("%-30s", "Lexeme");
-    red("%s\n", "Token");
+
     vector v = init_vector();
     while (fgets(buffer->primary_buffer, MAX_BUFFER_SIZE, fp) != NULL)
     {
@@ -397,16 +199,16 @@ vector getStream(FILE *fp)
         {
             push_back(v, info->tokens[i]);
             fprintf(new_fp, "%-30d %-30s %s\n", info->tokens[i]->lc, info->tokens[i]->lexeme, TOKENS[info->tokens[i]->tk]);
-            green("%-30d", info->tokens[i]->lc);
-            blue("%-30s", info->tokens[i]->lexeme);
-            yellow("%s\n", TOKENS[info->tokens[i]->tk]);
         }
+        free(info);
     }
     fclose(fp);
     fclose(new_fp);
+    free(buffer);
     return v;
 }
 
+// Returns the list of next tokens from the twin-buffer 
 tokenInfo getNextToken(twinBuffer buffer)
 {
     state curr_state = &states[START];
@@ -498,7 +300,14 @@ tokenInfo getNextToken(twinBuffer buffer)
                 token_id tk = search(look_up_table, keyword);
                 if (tk == TK_INVALID)
                 {
-                    tk = TK_FUNID;
+                    if (keyword[0] == '_')
+                    {
+                        tk = TK_FUNID;
+                    }
+                    else
+                    {
+                        tk = TK_FIELDID;
+                    }
                 }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
@@ -597,7 +406,14 @@ tokenInfo getNextToken(twinBuffer buffer)
                 token_id tk = search(look_up_table, keyword);
                 if (tk == TK_INVALID)
                 {
-                    tk = TK_FUNID;
+                    if (keyword[0] == '_')
+                    {
+                        tk = TK_FUNID;
+                    }
+                    else
+                    {
+                        tk = TK_FIELDID;
+                    }
                 }
                 tokens->tokens[tokens->token_count] = getNewToken(tk, buffer->line_count, keyword);
                 tokens->token_count++;
@@ -632,9 +448,11 @@ tokenInfo getNextToken(twinBuffer buffer)
     {
         buffer->secondary_buffer_index = 0;
     }
+    free(keyword);
     return tokens;
 }
 
+// Return Next State of the DFA given a Character
 state get_next_state(state current_state, char next_char)
 {
     bool flag = false;
@@ -660,30 +478,48 @@ state get_next_state(state current_state, char next_char)
     return &states[INVALID];
 }
 
-int main(int argc, char *argv[])
+
+// Removes the comments from the test-case file and puts remaining input 
+// into a clean file
+void removeComments(char *testcaseFile, char *cleanFile)
 {
-    initialize_states();
-    initialize_transitions();
-    initialize_lookup_table();
-    if (argc < 2)
+    FILE *testcase_fp = fopen(testcaseFile, "r");
+    FILE *clean_fp = fopen(cleanFile, "w");
+    if (testcase_fp == NULL)
     {
-        printf("Error: No input file provided\n");
+        printf("Error: Test Case File not found\n");
         exit(1);
     }
-    FILE *fp = fopen(argv[1], "r");
-    vector v = getStream(fp);
-    for (int i = 0; i < v->size; i++)
+    if (clean_fp == NULL)
     {
-        printf("%s\n", TOKENS[get(v, i)->tk]);
+        printf("Error: Could not create a new file\n");
+        exit(1);
     }
-    // for (int i = 1; i < 7; i++)
-    // {
-    //     char *file_name = (char *)malloc(30 * sizeof(char));
-    //     sprintf(file_name, "test_cases/t%d.txt", i);
-    //     FILE *fp = fopen(file_name, "r");
-    //     FILE *new_fp = getStream(fp);
-    //     fclose(new_fp);
-    //     printf("Test Case %d Passed\n", i);
-    // }
-    return 0;
+
+    char interm = fgetc(testcase_fp);
+
+    int comment = 0;
+
+    while (interm != EOF)
+    {
+        if (interm == '%')
+        {
+            comment = 1;
+        }
+        if (comment == 1)
+        {
+            if (interm == '\n')
+            {
+                comment = 0;
+            }
+        }
+        else
+        {
+            fputc(interm, clean_fp);
+        }
+        interm = fgetc(testcase_fp);
+    }
+
+    fclose(testcase_fp);
+    fclose(clean_fp);
 }
